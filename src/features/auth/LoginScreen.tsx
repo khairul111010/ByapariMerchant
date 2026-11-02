@@ -1,0 +1,127 @@
+import React, { useState } from 'react';
+import { ScrollView, StyleSheet } from 'react-native';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Controller, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import { z } from 'zod';
+import { errorMessage } from '../../api/errorMessage';
+import { ApiError } from '../../api/errors';
+import { queryClient } from '../../app/queryClient';
+import { useSession } from '../../store/session';
+import { KV_KEYS, kv } from '../../storage/mmkv';
+import { storeApiBaseUrl } from '../../config';
+import { Button, Field, Text } from '../../ui';
+import { spacing } from '../../ui/theme';
+import { login } from './api';
+import { ME_KEY } from './useMe';
+
+const SHOP_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/i;
+
+export function LoginScreen({
+  onForgot,
+  onSignup,
+}: {
+  onForgot: () => void;
+  onSignup: () => void;
+}) {
+  const { t } = useTranslation();
+  const signIn = useSession((s) => s.signIn);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const schema = z.object({
+    shop: z.string().trim().regex(SHOP_RE, t('login.invalidShop')),
+    email: z.string().trim().email(t('login.invalidEmail')),
+    password: z.string().min(1, t('login.passwordRequired')),
+  });
+  type Form = z.infer<typeof schema>;
+
+  const { control, handleSubmit, formState } = useForm<Form>({
+    resolver: zodResolver(schema),
+    defaultValues: { shop: kv.getString(KV_KEYS.shopAddress) ?? '', email: '', password: '' },
+  });
+
+  const onSubmit = handleSubmit(async ({ shop, email, password }) => {
+    setFormError(null);
+    try {
+      const res = await login(shop, email, password);
+      // Server is authoritative for the store host; fall back to the one we computed.
+      const base = res.store.api_base_url.startsWith('https://')
+        ? res.store.api_base_url
+        : storeApiBaseUrl(shop);
+      kv.set(KV_KEYS.shopAddress, shop.trim().toLowerCase());
+      queryClient.setQueryData(ME_KEY, {
+        user: res.user,
+        store: res.store,
+        limits: res.limits,
+        platform: res.platform,
+        unread_notifications: res.unread_notifications,
+      });
+      await signIn(res.token, base);
+    } catch (e) {
+      setFormError(
+        e instanceof ApiError && e.kind === 'unauthenticated'
+          ? t('login.wrongCredentials')
+          : errorMessage(e, t),
+      );
+    }
+  });
+
+  return (
+    <ScrollView contentContainerStyle={styles.wrap} keyboardShouldPersistTaps="handled">
+      <Text variant="title">{t('login.title')}</Text>
+      <Controller
+        control={control}
+        name="shop"
+        render={({ field, fieldState }) => (
+          <Field
+            label={t('login.shopAddress')}
+            suffix={t('login.shopAddressSuffix')}
+            value={field.value}
+            onChangeText={field.onChange}
+            autoCapitalize="none"
+            autoCorrect={false}
+            error={fieldState.error?.message}
+          />
+        )}
+      />
+      <Text variant="muted">{t('login.shopAddressHint')}</Text>
+      <Controller
+        control={control}
+        name="email"
+        render={({ field, fieldState }) => (
+          <Field
+            label={t('login.email')}
+            value={field.value}
+            onChangeText={field.onChange}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+            error={fieldState.error?.message}
+          />
+        )}
+      />
+      <Controller
+        control={control}
+        name="password"
+        render={({ field, fieldState }) => (
+          <Field
+            label={t('login.password')}
+            value={field.value}
+            onChangeText={field.onChange}
+            secureTextEntry
+            autoCapitalize="none"
+            error={fieldState.error?.message}
+          />
+        )}
+      />
+      {formError ? <Text variant="error">{formError}</Text> : null}
+      <Button title={t('login.signIn')} onPress={onSubmit} loading={formState.isSubmitting} />
+      <Button title={t('login.forgot')} kind="secondary" onPress={onForgot} />
+      <Button title={t('signup.createShop')} kind="secondary" onPress={onSignup} />
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  wrap: { padding: spacing.xl, gap: spacing.md, flexGrow: 1, justifyContent: 'center' },
+});

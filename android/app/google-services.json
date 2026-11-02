@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "789572480116",
+    "project_id": "byapari-b25e5",
+    "storage_bucket": "byapari-b25e5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:789572480116:android:ee991d17ed841a94a0f521",
+        "android_client_info": {
+          "package_name": "com.byapari.merchant"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAs04gaAghk6HsuuDidlFGKQAUKfSgYzkw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
