@@ -32,6 +32,7 @@ export interface ClientDeps {
   /** Called on 503 store_suspended. */
   onSuspended: () => void;
   fetchImpl?: typeof fetch;
+  xhrImpl?: new () => XMLHttpRequest;
 }
 
 const buildQuery = (query: RequestOptions<unknown>['query']): string => {
@@ -115,8 +116,61 @@ export function createApiClient(deps: ClientDeps) {
     return parsed.data;
   }
 
+  /** Multipart POST with upload progress (fetch cannot report it). Same auth and error mapping as `request`. */
+  function upload<T>(
+    path: string,
+    form: FormData,
+    opts: { schema: ZodType<T>; onProgress?: (fraction: number) => void; signal?: AbortSignal },
+  ): Promise<T> {
+    const base = deps.getStoreBaseUrl();
+    if (!base) {
+      return Promise.reject(new ApiError('unauthenticated', 401));
+    }
+    const Xhr = deps.xhrImpl ?? XMLHttpRequest;
+    return new Promise<T>((resolve, reject) => {
+      const xhr = new Xhr();
+      xhr.open('POST', `${base}${path}`);
+      xhr.setRequestHeader('Accept', 'application/json');
+      const token = deps.getToken();
+      if (token) {
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      }
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable && e.total > 0) {
+          opts.onProgress?.(e.loaded / e.total);
+        }
+      };
+      xhr.onerror = () => reject(networkError());
+      xhr.ontimeout = () => reject(networkError());
+      xhr.onabort = () => reject(networkError());
+      xhr.onload = () => {
+        let json: unknown;
+        try {
+          json = xhr.responseText ? JSON.parse(xhr.responseText) : undefined;
+        } catch {
+          json = undefined;
+        }
+        if (xhr.status < 200 || xhr.status >= 300) {
+          const err = mapError(xhr.status, (json ?? {}) as ErrorBody);
+          if (err.kind === 'unauthenticated') {
+            deps.onUnauthorized();
+          } else if (err.kind === 'store_suspended') {
+            deps.onSuspended();
+          }
+          reject(err);
+          return;
+        }
+        const parsed = opts.schema.safeParse(json);
+        parsed.success ? resolve(parsed.data) : reject(invalidResponse());
+      };
+      opts.signal?.addEventListener('abort', () => xhr.abort());
+      xhr.send(form);
+    });
+  }
+
   return {
     request,
+    upload,
     get: <T>(path: string, o?: RequestOptions<T>) => request<T>('GET', path, o),
     post: <T>(path: string, o?: RequestOptions<T>) => request<T>('POST', path, o),
     put: <T>(path: string, o?: RequestOptions<T>) => request<T>('PUT', path, o),

@@ -74,3 +74,17 @@ jest.mock('react-native-share', () => ({
   __esModule: true,
   default: { open: jest.fn().mockResolvedValue({}) },
 }));
+
+jest.mock('@bam.tech/react-native-image-resizer', () => ({
+  __esModule: true,
+  default: { createResizedImage: jest.fn().mockResolvedValue({ uri: 'file:///r.jpg', size: 1000 }) },
+}));
+jest.mock('react-native-image-picker', () => ({
+  launchCamera: jest.fn().mockResolvedValue({ didCancel: true }),
+  launchImageLibrary: jest.fn().mockResolvedValue({ didCancel: true }),
+}));
+
+jest.mock('react-native-vision-camera', () => ({
+  useCameraPermission: () => ({ hasPermission: false, canRequestPermission: true, requestPermission: jest.fn() }),
+}));
+jest.mock('react-native-vision-camera-barcode-scanner', () => ({ CodeScanner: () => null }));

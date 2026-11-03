@@ -14,6 +14,7 @@ import { authenticate, isBiometricAvailable } from '../auth/biometric';
 import { stopPush } from '../push/push';
 import { usePendingOrder } from '../../store/pendingOrder';
 import { OrdersTab } from '../orders/OrdersTab';
+import { ProductsTab } from '../products/ProductsTab';
 import { PendingBanner } from './PendingBanner';
 
 const Tab = createBottomTabNavigator();
@@ -126,9 +127,7 @@ export function MainTabs() {
           component={OrdersTab}
           options={{ title: t('tabs.orders') }}
         />
-        <Tab.Screen name="Products" options={{ title: t('tabs.products') }}>
-          {() => <Placeholder title={t('tabs.products')} />}
-        </Tab.Screen>
+        <Tab.Screen name="Products" component={ProductsTab} options={{ title: t('tabs.products') }} />
         <Tab.Screen name="Sell" options={{ title: t('tabs.sell') }}>
           {() => <Placeholder title={t('tabs.sell')} />}
         </Tab.Screen>
