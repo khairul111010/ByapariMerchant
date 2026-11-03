@@ -155,3 +155,8 @@ const choiceStyles = StyleSheet.create({
   },
   selected: { borderColor: colors.primary, borderWidth: 2.5, backgroundColor: colors.surface },
 });
+
+/** Placeholder block shown instead of a spinner while content loads. */
+export function Skeleton({ height = 20 }: { height?: number }) {
+  return <View style={{ height, borderRadius: radius.md, backgroundColor: colors.surface, marginBottom: spacing.sm }} />;
+}

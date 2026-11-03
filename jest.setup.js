@@ -38,3 +38,39 @@ jest.mock('@react-native-firebase/crashlytics', () => ({
   recordError: jest.fn(),
   setCrashlyticsCollectionEnabled: jest.fn().mockResolvedValue(null),
 }));
+
+jest.mock('@notifee/react-native', () => ({
+  __esModule: true,
+  default: {
+    createChannel: jest.fn().mockResolvedValue('orders'),
+    displayNotification: jest.fn().mockResolvedValue('id'),
+    onForegroundEvent: jest.fn(() => () => {}),
+    onBackgroundEvent: jest.fn(),
+  },
+  AndroidImportance: { HIGH: 4 },
+  EventType: { PRESS: 1 },
+}));
+
+jest.mock('@react-native-firebase/messaging', () => ({
+  getMessaging: jest.fn(),
+  getToken: jest.fn().mockResolvedValue('tok'),
+  onMessage: jest.fn(() => () => {}),
+  onNotificationOpenedApp: jest.fn(() => () => {}),
+  onTokenRefresh: jest.fn(() => () => {}),
+  getInitialNotification: jest.fn().mockResolvedValue(null),
+  requestPermission: jest.fn().mockResolvedValue(1),
+  setBackgroundMessageHandler: jest.fn(),
+}));
+
+jest.mock('@react-native-community/netinfo', () => ({
+  __esModule: true,
+  default: { addEventListener: jest.fn(() => () => {}) },
+}));
+
+jest.mock('react-native-html-to-pdf', () => ({
+  generatePDF: jest.fn().mockResolvedValue({ filePath: '/tmp/x.pdf' }),
+}));
+jest.mock('react-native-share', () => ({
+  __esModule: true,
+  default: { open: jest.fn().mockResolvedValue({}) },
+}));

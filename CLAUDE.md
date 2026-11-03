@@ -5,7 +5,7 @@ The merchant's whole business in their pocket. Bypari is a multi-tenant e-commer
 
 This repo is **only the mobile client**. The Laravel backend lives in a separate repo and is **already built for this app** (milestones M1–M5). Read `docs/api-contract.md` before writing any networking code. Never invent endpoints; if one is missing, write it down under "Gaps" in that file and tell the user — don't mock around it silently.
 
-Application ID: `com.byapari.merchant` (Firebase project `byapari`). Do not change it.
+Application ID: `com.byapari.merchant` (Firebase project `byapari-b25e5`). Central domain: `byapari.shop`. Do not change the application ID.
 
 ## Hard technical constraints
 - **React Native CLI (bare workflow), TypeScript strict, New Architecture + Hermes. NO Expo** (no Expo modules, no EAS). Native access must be unrestricted; write Kotlin/Swift modules when a library doesn't exist.
@@ -82,8 +82,8 @@ Suggested libraries (confirm each in the plan; flag anything needing custom nati
 ## How to work
 1. **Don't write app code first.** Produce a plan: folder structure, library choices with reasons (flag native code), the screen map, the push design, the offline design, and milestones. Wait for the user's confirmation.
 2. Build milestone by milestone, testing on a real low-end Android or an emulator profile before calling anything done:
-   - **A** Foundation: project, theme, i18n, API client + error mapper, auth (login, signup, forgot-password, biometric unlock), `/me`, role-aware navigation, pending banner.
-   - **B** Orders + push: list, detail, status, payments, courier, invoice, FCM + Notifee channel, deep links.
+   - **A** (code complete; user reports it works on their phone — not individually confirmed: biometric lock, release-build Crashlytics) Foundation: project, theme, i18n, API client + error mapper, auth (login, signup, forgot-password, biometric unlock), `/me`, role-aware navigation, pending banner.
+   - **B** ✅ (done; user confirmed a real push arrives. Not individually confirmed: tap-to-open in background/killed state, offline queue on device, invoice PDF content) Orders + push: list, detail, status, payments, courier, invoice, FCM + Notifee channel, deep links.
    - **C** Catalogue + inventory: products, variants, images (on-device resize), categories, stock, scan, CSV import.
    - **D** Selling: POS (+ printer), coupons, zones, landing pages, carts, reviews, customers.
    - **E** Storefront + insights: banners, home sections, themes, dashboard.

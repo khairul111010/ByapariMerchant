@@ -10,6 +10,7 @@ export const userSchema = z
     name: z.string(),
     email: z.string(),
     is_owner: z.boolean(),
+    roles: z.array(z.string()).optional(),
   })
   .passthrough();
 
@@ -17,6 +18,7 @@ export const storeSchema = z
   .object({
     api_base_url: z.string(),
     is_pending: z.boolean(),
+    status: z.string().optional(),
     name: z.string().optional(),
     subdomain: z.string().optional(),
     ai_configured: z.boolean().optional(),
@@ -24,10 +26,21 @@ export const storeSchema = z
   })
   .passthrough();
 
-export const limitsSchema = z.record(z.string(), z.unknown());
+export const limitsSchema = z
+  .object({
+    max_staff_accounts: z.number().nullable(),
+    can_add_staff_account: z.boolean(),
+    custom_domain_enabled: z.boolean(),
+    courier_drivers: z.array(z.string()),
+    configured_courier_drivers: z.array(z.string()),
+  })
+  .passthrough();
 
 export const platformSchema = z
-  .object({ support_whatsapp_url: z.string().nullable().optional() })
+  .object({
+    support_whatsapp: z.string().nullable().optional(),
+    support_whatsapp_url: z.string().nullable().optional(),
+  })
   .passthrough();
 
 /** `/me` */

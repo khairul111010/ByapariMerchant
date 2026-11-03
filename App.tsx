@@ -16,6 +16,8 @@ import { useMe } from './src/features/auth/useMe';
 import { MainTabs } from './src/features/shell/MainTabs';
 import { SuspendedScreen } from './src/features/shell/SuspendedScreen';
 import { initTelemetry } from './src/telemetry/crash';
+import { useQueueSync } from './src/offline/useQueue';
+import { usePush } from './src/features/push/usePush';
 import { useLock } from './src/store/lock';
 import { useSession } from './src/store/session';
 import { colors } from './src/ui/theme';
@@ -41,6 +43,8 @@ function SignedOut() {
 function SignedIn() {
   useMe(); // refresh /me on launch
   useAppLock();
+  usePush();
+  useQueueSync();
   const locked = useLock((s) => s.locked);
   const suspended = useSession((s) => s.storeSuspended);
   if (locked) {
