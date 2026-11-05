@@ -5,11 +5,12 @@ import { storeApiBaseUrl } from '../../config';
 
 const DEVICE_NAME = 'Bypari Merchant app';
 
-export const login = (shopAddress: string, email: string, password: string) =>
+/** `loginId` is an email or a phone (normalised to 01XXXXXXXXX). The server also still accepts `email`. */
+export const login = (shopAddress: string, loginId: string, password: string) =>
   api.post('/auth/login', {
     baseUrl: storeApiBaseUrl(shopAddress),
     anonymous: true,
-    body: { email, password, device_name: DEVICE_NAME },
+    body: { login: loginId, password, device_name: DEVICE_NAME },
     schema: sessionPayloadSchema,
   });
 
@@ -23,4 +24,5 @@ export const forgotPassword = (shopAddress: string, email: string) =>
 
 export const fetchMe = () => api.get('/me', { schema: meSchema });
 
-export const logoutRequest = () => api.post('/auth/logout', { schema: z.unknown() });
+export const logoutRequest = () =>
+  api.post('/auth/logout', { schema: z.unknown() });

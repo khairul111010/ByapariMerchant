@@ -18,10 +18,10 @@ import { spacing } from '../../ui/theme';
 import { checkSubdomain, fetchSignupOptions, signup } from './signupApi';
 import {
   makeSignupSchema,
-  normalizeWhatsapp,
   SHOP_RE,
   SignupForm,
   STEP_FIELDS,
+  toSignupPayload,
 } from './signupSchema';
 import { ME_KEY } from './useMe';
 
@@ -51,6 +51,7 @@ export function SignupScreen({ onBackToLogin }: { onBackToLogin: () => void }) {
         category: '',
         owner_name: '',
         owner_email: '',
+        owner_phone: '',
         owner_password: '',
         owner_password_confirmation: '',
         whatsapp_number: '',
@@ -99,11 +100,7 @@ export function SignupScreen({ onBackToLogin }: { onBackToLogin: () => void }) {
   const submit = handleSubmit(async values => {
     setFormError(null);
     try {
-      const res = await signup({
-        ...values,
-        subdomain: values.subdomain.trim().toLowerCase(),
-        whatsapp_number: normalizeWhatsapp(values.whatsapp_number) || undefined,
-      });
+      const res = await signup(toSignupPayload(values));
       const base = res.store.api_base_url.startsWith('https://')
         ? res.store.api_base_url
         : storeApiBaseUrl(values.subdomain);
@@ -303,7 +300,7 @@ export function SignupScreen({ onBackToLogin }: { onBackToLogin: () => void }) {
             name="owner_email"
             render={({ field, fieldState }) => (
               <Field
-                label={t('login.email')}
+                label={t('signup.emailOptional')}
                 value={field.value}
                 onChangeText={field.onChange}
                 keyboardType="email-address"
@@ -313,6 +310,20 @@ export function SignupScreen({ onBackToLogin }: { onBackToLogin: () => void }) {
               />
             )}
           />
+          <Controller
+            control={control}
+            name="owner_phone"
+            render={({ field, fieldState }) => (
+              <Field
+                label={t('signup.phone')}
+                value={field.value}
+                onChangeText={field.onChange}
+                keyboardType="phone-pad"
+                error={fieldState.error?.message}
+              />
+            )}
+          />
+          <Text variant="muted">{t('signup.contactHint')}</Text>
           <Controller
             control={control}
             name="owner_password"

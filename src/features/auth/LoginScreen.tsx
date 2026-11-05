@@ -14,6 +14,7 @@ import { BrandLogo } from '../../ui/Brand';
 import { Button, Field, Text } from '../../ui';
 import { spacing } from '../../ui/theme';
 import { login } from './api';
+import { parseLoginId } from './contact';
 import { ME_KEY } from './useMe';
 
 const SHOP_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/i;
@@ -31,7 +32,10 @@ export function LoginScreen({
 
   const schema = z.object({
     shop: z.string().trim().regex(SHOP_RE, t('login.invalidShop')),
-    email: z.string().trim().email(t('login.invalidEmail')),
+    login: z
+      .string()
+      .trim()
+      .refine(v => parseLoginId(v) !== null, t('login.identifierInvalid')),
     password: z.string().min(1, t('login.passwordRequired')),
   });
   type Form = z.infer<typeof schema>;
@@ -40,36 +44,44 @@ export function LoginScreen({
     resolver: zodResolver(schema),
     defaultValues: {
       shop: kv.getString(KV_KEYS.shopAddress) ?? '',
-      email: '',
+      login: '',
       password: '',
     },
   });
 
-  const onSubmit = handleSubmit(async ({ shop, email, password }) => {
-    setFormError(null);
-    try {
-      const res = await login(shop, email, password);
-      // Server is authoritative for the store host; fall back to the one we computed.
-      const base = res.store.api_base_url.startsWith('https://')
-        ? res.store.api_base_url
-        : storeApiBaseUrl(shop);
-      kv.set(KV_KEYS.shopAddress, shop.trim().toLowerCase());
-      queryClient.setQueryData(ME_KEY, {
-        user: res.user,
-        store: res.store,
-        limits: res.limits,
-        platform: res.platform,
-        unread_notifications: res.unread_notifications,
-      });
-      await signIn(res.token, base);
-    } catch (e) {
-      setFormError(
-        e instanceof ApiError && e.kind === 'unauthenticated'
-          ? t('login.wrongCredentials')
-          : errorMessage(e, t),
-      );
-    }
-  });
+  const onSubmit = handleSubmit(
+    async ({ shop, login: loginInput, password }) => {
+      setFormError(null);
+      try {
+        // Validated above, so this is an email or a normalised phone.
+        const id = parseLoginId(loginInput);
+        const res = await login(
+          shop,
+          id ? id.value : loginInput.trim(),
+          password,
+        );
+        // Server is authoritative for the store host; fall back to the one we computed.
+        const base = res.store.api_base_url.startsWith('https://')
+          ? res.store.api_base_url
+          : storeApiBaseUrl(shop);
+        kv.set(KV_KEYS.shopAddress, shop.trim().toLowerCase());
+        queryClient.setQueryData(ME_KEY, {
+          user: res.user,
+          store: res.store,
+          limits: res.limits,
+          platform: res.platform,
+          unread_notifications: res.unread_notifications,
+        });
+        await signIn(res.token, base);
+      } catch (e) {
+        setFormError(
+          e instanceof ApiError && e.kind === 'unauthenticated'
+            ? t('login.wrongCredentials')
+            : errorMessage(e, t),
+        );
+      }
+    },
+  );
 
   return (
     <ScrollView
@@ -98,13 +110,12 @@ export function LoginScreen({
       <Text variant="muted">{t('login.shopAddressHint')}</Text>
       <Controller
         control={control}
-        name="email"
+        name="login"
         render={({ field, fieldState }) => (
           <Field
-            label={t('login.email')}
+            label={t('login.identifier')}
             value={field.value}
             onChangeText={field.onChange}
-            keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
             error={fieldState.error?.message}

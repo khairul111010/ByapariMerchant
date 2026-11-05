@@ -8,7 +8,9 @@ export const userSchema = z
   .object({
     id: z.number(),
     name: z.string(),
-    email: z.string(),
+    // An owner may register with a phone only, so either of these can be null (not both).
+    email: z.string().nullable(),
+    phone: z.string().nullable().optional(),
     is_owner: z.boolean(),
     roles: z.array(z.string()).optional(),
   })

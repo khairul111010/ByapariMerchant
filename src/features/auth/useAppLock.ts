@@ -6,7 +6,7 @@ import { shouldLock, useLock } from '../../store/lock';
 export function useAppLock() {
   const leftAt = useRef<number | null>(null);
   useEffect(() => {
-    const sub = AppState.addEventListener('change', (state) => {
+    const sub = AppState.addEventListener('change', state => {
       if (state === 'background') {
         leftAt.current = Date.now();
       } else if (state === 'active' && leftAt.current !== null) {

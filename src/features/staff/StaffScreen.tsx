@@ -8,6 +8,7 @@ import { ApiError } from '../../api/errors';
 import { StaffMember } from '../../api/schemas/settings';
 import { formatNumber } from '../../i18n/format';
 import { useLang } from '../../i18n';
+import { contactLabel } from '../auth/contact';
 import { useMe } from '../auth/useMe';
 import { Button, Choice, Field, Skeleton, Text } from '../../ui';
 import { colors, radius, spacing, cardStyle } from '../../ui/theme';
@@ -237,7 +238,7 @@ export function StaffScreen({
                 {s.name} {s.id === myId ? t('staff.you') : ''}
               </Text>
               <Text variant="muted">
-                {s.email} · {t(`staff.${s.role}`)}
+                {contactLabel(s)} · {t(`staff.${s.role}`)}
               </Text>
               <Button
                 title={t('staff.edit')}

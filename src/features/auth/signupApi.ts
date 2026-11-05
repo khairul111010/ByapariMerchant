@@ -6,7 +6,11 @@ import {
 } from '../../api/schemas/signup';
 
 export const fetchSignupOptions = () =>
-  api.get('/signup/options', { central: true, anonymous: true, schema: signupOptionsSchema });
+  api.get('/signup/options', {
+    central: true,
+    anonymous: true,
+    schema: signupOptionsSchema,
+  });
 
 export const checkSubdomain = (subdomain: string, signal?: AbortSignal) =>
   api.get('/signup/subdomain-availability', {
@@ -23,7 +27,8 @@ export interface SignupInput {
   subdomain: string;
   category: string;
   owner_name: string;
-  owner_email: string;
+  owner_email?: string;
+  owner_phone?: string;
   owner_password: string;
   owner_password_confirmation: string;
   whatsapp_number?: string;

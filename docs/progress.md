@@ -22,6 +22,10 @@ Legend: ✅ confirmed by the user on a real phone · 🧪 covered by automated t
 - ⬜ Signup against a fresh shop end to end
 - ⬜ Unexplained dev warning on every cold start: `react-i18next NO_I18NEXT_INSTANCE`. Tried synchronous init (no effect, reverted). No visible effect so far. Revisit if raw keys like `orders.title` ever appear.
 
+- ⬜ Phone sign-in (backend change 2026-11-05): log in with an email, with `01XXXXXXXXX`, with `+880 1712-345678`, and with Bangla digits; wrong credentials shows the new message
+- ⬜ Phone signup: sign up with a phone only, an email only, and both; neither is refused with a message under the phone field; staff list shows a phone-only owner's number instead of a blank
+- ⬜ Forgot-password screen shows the "signed up with only a phone? message support on WhatsApp" note
+
 ### B Orders + push
 - ✅ A real new-order push arrives
 - ⬜ Tapping the push opens that order when the app is in the background
@@ -80,6 +84,7 @@ Legend: ✅ confirmed by the user on a real phone · 🧪 covered by automated t
 - Not done: haptics, shared-element transitions, a Latin display font (kept Noto Sans Bengali so old Android phones render Bangla).
 
 ## Known gaps and open questions
+- **No way to change a password in the app.** A phone-only owner who gets an operator's temporary password (12 random characters) is signed out and can only sign in with it; there is no change-password, change-email or add-phone screen in the backend or the app yet. Needs a backend endpoint first.
 - Backend gaps are in `docs/api-contract.md` under "Gaps" (image upload has no idempotency key; `/me` vs describe inconsistency; `stock_changed` missing from the error table).
 - `PUT /products/{id}` response shape is not in the samples; the app re-reads the product after saving. Same for category create/update responses (not in the samples): the app re-reads the category list.
 - Category delete (known from the samples): it never refuses. Products in it are kept and become uncategorised; subcategories are promoted to top level. The response is always the fixed message "Category deleted.", so the app warns about the consequences before deleting. Category save responses return `{data: category}` and are now validated.
@@ -105,7 +110,7 @@ Legend: ✅ confirmed by the user on a real phone · 🧪 covered by automated t
 - `react-native-fast-image` not used yet; the product list uses React Native's `Image`. Check New Architecture support before swapping it in.
 
 ## Tests
-302 unit tests, 36 suites (API client, error mapper, offline queue, formatters, schemas against real samples, rich text, forms, push payload, upload). No component tests or Maestro E2E yet (CLAUDE.md asks for both).
+340 unit tests, 38 suites (API client, error mapper, offline queue, formatters, schemas against real samples, rich text, forms, push payload, upload). No component tests or Maestro E2E yet (CLAUDE.md asks for both).
 
 ## CI readiness (CLAUDE.md: lint, typecheck, test, signed release build)
 - `npm run lint`: 0 errors, 26 style warnings (`void promise` inside arrow functions). `npm run typecheck` clean. `npm test` 174 tests.

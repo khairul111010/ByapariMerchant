@@ -40,6 +40,7 @@ export function ForgotPasswordScreen({ onBack }: { onBack: () => void }) {
       </View>
       <Text variant="title">{t('forgot.title')}</Text>
       <Text variant="muted">{t('forgot.body')}</Text>
+      <Text variant="muted">{t('forgot.phoneOnly')}</Text>
       <Field
         label={t('login.shopAddress')}
         suffix={t('login.shopAddressSuffix')}

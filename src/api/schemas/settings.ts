@@ -96,7 +96,8 @@ export type Domain = z.infer<typeof domainSchema>;
 export const staffMemberSchema = z.object({
   id: z.number(),
   name: z.string(),
-  email: z.string(),
+  email: z.string().nullable(), // a phone-only owner has no email
+  phone: z.string().nullable().optional(),
   role: z.enum(['owner', 'staff']),
   created_at: z.string(),
 });

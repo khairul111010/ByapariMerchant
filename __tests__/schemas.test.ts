@@ -36,3 +36,16 @@ describe('payment and courier samples', () => {
     expect(orderEnvelopeSchema.parse(booked).data.courier.booking?.status).toBe('in_review');
   });
 });
+
+
+describe('a phone-only owner', () => {
+  it('logs in with no email: the user carries a phone and a null email', () => {
+    const phoneOnly = { ...loginSample, user: { ...loginSample.user, email: null, phone: '01712345678' } };
+    const r = sessionPayloadSchema.parse(phoneOnly);
+    expect(r.user.email).toBeNull();
+    expect(r.user.phone).toBe('01712345678');
+  });
+  it('still accepts the older reply without a phone key', () => {
+    expect(sessionPayloadSchema.safeParse(loginSample).success).toBe(true);
+  });
+});

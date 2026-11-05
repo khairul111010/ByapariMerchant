@@ -5,6 +5,6 @@ import { fetchMe } from './api';
 export const ME_KEY = ['me'] as const;
 
 export function useMe() {
-  const signedIn = useSession((s) => s.status === 'signedIn');
+  const signedIn = useSession(s => s.status === 'signedIn');
   return useQuery({ queryKey: ME_KEY, queryFn: fetchMe, enabled: signedIn });
 }
