@@ -16,7 +16,7 @@ export function InvoiceButton({ orderId }: { orderId: number }) {
     try {
       await shareInvoice(
         orderId,
-        (inv) => ({
+        inv => ({
           invoice: t('orders.invoice'),
           date: t('orders.invoiceDate'),
           billTo: t('orders.invoiceBillTo'),
@@ -31,8 +31,12 @@ export function InvoiceButton({ orderId }: { orderId: number }) {
           advancePaid: t('orders.advancePaid'),
           amountDue: t('orders.amountDue'),
           payment: t('orders.paymentTitle'),
-          paymentMethod: t(`orders.payment.${inv.payment.method}`, { defaultValue: inv.payment.method_label }),
-          paymentStatus: t(`orders.paymentStatus.${inv.payment.status}`, { defaultValue: inv.payment.status }),
+          paymentMethod: t(`orders.payment.${inv.payment.method}`, {
+            defaultValue: inv.payment.method_label,
+          }),
+          paymentStatus: t(`orders.paymentStatus.${inv.payment.status}`, {
+            defaultValue: inv.payment.status,
+          }),
         }),
         lang,
       );
@@ -45,7 +49,12 @@ export function InvoiceButton({ orderId }: { orderId: number }) {
 
   return (
     <>
-      <Button title={t('orders.invoiceShare')} kind="secondary" loading={busy} onPress={run} />
+      <Button
+        title={t('orders.invoiceShare')}
+        kind="secondary"
+        loading={busy}
+        onPress={run}
+      />
       {failed ? <Text variant="error">{t('orders.invoiceFailed')}</Text> : null}
     </>
   );

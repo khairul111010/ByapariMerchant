@@ -10,7 +10,13 @@ import { Block, blocksToHtml, htmlToBlocks } from '../../richtext/model';
 import { RichTextEditor } from '../../richtext/RichTextEditor';
 import { Button, Choice, Field, Text } from '../../ui';
 import { colors, spacing } from '../../ui/theme';
-import { useCategories, useCreateProduct, useUpdateProduct } from './hooks';
+import { useMe } from '../auth/useMe';
+import {
+  useCategories,
+  useCreateProduct,
+  useDescribeProduct,
+  useUpdateProduct,
+} from './hooks';
 import {
   CreateForm,
   EditForm,
@@ -39,26 +45,47 @@ export function ProductFormScreen(props: Props) {
     htmlToBlocks(editing?.description),
   );
   const [formError, setFormError] = useState<string | null>(null);
+  const aiConfigured = useMe().data?.store.ai_configured === true;
+  const describe = useDescribeProduct();
+  const [aiMessage, setAiMessage] = useState<string | null>(null);
+
+  const writeWithAi = () => {
+    setAiMessage(null);
+    const { name, category_id } = getValues();
+    if (!name.trim()) {
+      setAiMessage(t('products.form.aiNeedsName'));
+      return;
+    }
+    describe.mutate(
+      { name: name.trim(), categoryId: category_id },
+      {
+        // Added below what is already there, so nothing the merchant wrote is lost.
+        onSuccess: html => setBlocks(b => [...b, ...htmlToBlocks(html)]),
+        onError: e => setAiMessage(errorMessage(e, t)),
+      },
+    );
+  };
 
   const schema = useMemo(
     () => (editing ? makeEditSchema(t) : makeCreateSchema(t)),
     [editing, t],
   );
-  const { control, handleSubmit, setError, formState } = useForm<CreateForm>({
-    resolver: zodResolver(schema) as never,
-    defaultValues: {
-      name: editing?.name ?? '',
-      status: editing?.status ?? 'draft',
-      sku: '',
-      price: '',
-      compare_at_price: '',
-      stock_quantity: '0',
-      category_id: editing?.category?.id ?? null,
-      brand: editing?.brand ?? '',
-      track_inventory: editing?.track_inventory ?? true,
-      is_featured: editing?.is_featured ?? false,
-    },
-  });
+  const { control, handleSubmit, setError, formState, getValues } =
+    useForm<CreateForm>({
+      resolver: zodResolver(schema) as never,
+      defaultValues: {
+        name: editing?.name ?? '',
+        status: editing?.status ?? 'draft',
+        sku: '',
+        price: '',
+        compare_at_price: '',
+        stock_quantity: '0',
+        category_id: editing?.category?.id ?? null,
+        brand: editing?.brand ?? '',
+        track_inventory: editing?.track_inventory ?? true,
+        is_featured: editing?.is_featured ?? false,
+      },
+    });
 
   const submit = handleSubmit(async values => {
     setFormError(null);
@@ -225,6 +252,18 @@ export function ProductFormScreen(props: Props) {
       />
 
       <Text variant="label">{t('products.form.description')}</Text>
+      {aiConfigured ? (
+        <View style={styles.group}>
+          <Button
+            title={t('products.form.aiDescribe')}
+            kind="secondary"
+            loading={describe.isPending}
+            onPress={writeWithAi}
+          />
+          <Text variant="muted">{t('products.form.aiNote')}</Text>
+          {aiMessage ? <Text variant="error">{aiMessage}</Text> : null}
+        </View>
+      ) : null}
       <RichTextEditor value={blocks} onChange={setBlocks} />
 
       {formError ? <Text variant="error">{formError}</Text> : null}

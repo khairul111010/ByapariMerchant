@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { CategoriesScreen } from '../categories/CategoriesScreen';
+import { CategoryFormScreen } from '../categories/CategoryFormScreen';
+import { ImportScreen } from '../imports/ImportScreen';
 import { LowStockScreen } from './LowStockScreen';
 import { ProductFormScreen } from './ProductFormScreen';
 import { useProduct } from './hooks';
@@ -12,6 +15,9 @@ type View =
   | { name: 'low' }
   | { name: 'scan' }
   | { name: 'create' }
+  | { name: 'categories' }
+  | { name: 'import' }
+  | { name: 'category'; id: number | null }
   | { name: 'edit'; id: number };
 
 function EditLoader({
@@ -63,6 +69,24 @@ export function ProductsTab() {
           onDone={id => setView({ name: 'detail', id })}
         />
       );
+    case 'import':
+      return <ImportScreen onBack={list} />;
+    case 'categories':
+      return (
+        <CategoriesScreen
+          onBack={list}
+          onAdd={() => setView({ name: 'category', id: null })}
+          onEdit={id => setView({ name: 'category', id })}
+        />
+      );
+    case 'category':
+      return (
+        <CategoryFormScreen
+          id={view.id}
+          onBack={() => setView({ name: 'categories' })}
+          onDone={() => setView({ name: 'categories' })}
+        />
+      );
     case 'low':
       return (
         <LowStockScreen
@@ -84,6 +108,8 @@ export function ProductsTab() {
           onScan={() => setView({ name: 'scan' })}
           onLowStock={() => setView({ name: 'low' })}
           onCreate={() => setView({ name: 'create' })}
+          onCategories={() => setView({ name: 'categories' })}
+          onImport={() => setView({ name: 'import' })}
         />
       );
   }

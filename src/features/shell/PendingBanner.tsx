@@ -21,7 +21,8 @@ export function PendingBanner() {
           accessibilityRole="link"
           accessibilityLabel={t('pending.action')}
           style={styles.action}
-          onPress={() => void Linking.openURL(url)}>
+          onPress={() => void Linking.openURL(url)}
+        >
           <Text variant="label" style={styles.actionText}>
             {t('pending.action')}
           </Text>
@@ -32,7 +33,11 @@ export function PendingBanner() {
 }
 
 const styles = StyleSheet.create({
-  wrap: { backgroundColor: colors.warningBg, padding: spacing.md, gap: spacing.sm },
+  wrap: {
+    backgroundColor: colors.warningBg,
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
   text: { color: colors.warningText },
   action: {
     minHeight: touch,

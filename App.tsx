@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, StatusBar, View } from 'react-native';
+import { ActivityIndicator, StatusBar, StyleSheet, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -27,7 +27,9 @@ initTelemetry();
 type AuthStep = 'language' | 'login' | 'forgot' | 'signup';
 
 function SignedOut() {
-  const [step, setStep] = useState<AuthStep>(hasChosenLanguage() ? 'login' : 'language');
+  const [step, setStep] = useState<AuthStep>(
+    hasChosenLanguage() ? 'login' : 'language',
+  );
   if (step === 'language') {
     return <LanguageScreen onDone={() => setStep('login')} />;
   }
@@ -37,7 +39,12 @@ function SignedOut() {
   if (step === 'signup') {
     return <SignupScreen onBackToLogin={() => setStep('login')} />;
   }
-  return <LoginScreen onForgot={() => setStep('forgot')} onSignup={() => setStep('signup')} />;
+  return (
+    <LoginScreen
+      onForgot={() => setStep('forgot')}
+      onSignup={() => setStep('signup')}
+    />
+  );
 }
 
 function SignedIn() {
@@ -45,17 +52,23 @@ function SignedIn() {
   useAppLock();
   usePush();
   useQueueSync();
-  const locked = useLock((s) => s.locked);
-  const suspended = useSession((s) => s.storeSuspended);
+  const locked = useLock(s => s.locked);
+  const suspended = useSession(s => s.storeSuspended);
   if (locked) {
     return <LockScreen />;
   }
-  return suspended ? <SuspendedScreen /> : <NavigationContainer><MainTabs /></NavigationContainer>;
+  return suspended ? (
+    <SuspendedScreen />
+  ) : (
+    <NavigationContainer>
+      <MainTabs />
+    </NavigationContainer>
+  );
 }
 
 function Root() {
-  const status = useSession((s) => s.status);
-  const hydrate = useSession((s) => s.hydrate);
+  const status = useSession(s => s.status);
+  const hydrate = useSession(s => s.hydrate);
   useEffect(() => {
     void hydrate().then(() => {
       if (useSession.getState().status === 'signedIn') {
@@ -66,7 +79,7 @@ function Root() {
 
   if (status === 'booting') {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={styles.boot}>
         <ActivityIndicator color={colors.primary} />
       </View>
     );
@@ -78,11 +91,19 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <StatusBar barStyle="dark-content" />
-      <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
-        <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{ persister }}
+      >
+        <SafeAreaView style={styles.root}>
           <Root />
         </SafeAreaView>
       </PersistQueryClientProvider>
     </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  boot: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  root: { flex: 1, backgroundColor: colors.bg },
+});

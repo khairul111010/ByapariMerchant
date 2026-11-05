@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { api } from '../../api/instance';
 import {
   categoriesSchema,
+  describeSchema,
   imageSchema,
   lookupSchema,
   lowStockSchema,
@@ -93,3 +94,9 @@ export const deleteVariant = (productId: number, variantId: number) =>
   api.delete(`/products/${productId}/variants/${variantId}`, { schema: z.unknown() });
 
 export const deleteProduct = (id: number) => api.delete(`/products/${id}`, { schema: z.unknown() });
+
+/** Uses the merchant's own AI key on the server. English only. 422 if no key is configured. */
+export const describeProduct = (name: string, categoryId: number | null) =>
+  api
+    .post('/products/describe', { body: { name, category_id: categoryId ?? undefined }, schema: describeSchema })
+    .then((r) => r.description);

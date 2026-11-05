@@ -5,7 +5,7 @@ import { errorMessage } from '../../api/errorMessage';
 import { formatNumber } from '../../i18n/format';
 import { useLang } from '../../i18n';
 import { Button, Skeleton, Text } from '../../ui';
-import { colors, radius, spacing } from '../../ui/theme';
+import { colors, spacing, cardStyle } from '../../ui/theme';
 import { useLowStock } from './hooks';
 
 export function LowStockScreen({
@@ -67,9 +67,7 @@ export function LowStockScreen({
 const styles = StyleSheet.create({
   wrap: { padding: spacing.lg, gap: spacing.md, backgroundColor: colors.bg },
   row: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.lg,
+    ...cardStyle,
     padding: spacing.md,
     gap: 2,
     minHeight: 56,

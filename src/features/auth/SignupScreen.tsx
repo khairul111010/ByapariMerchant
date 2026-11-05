@@ -12,6 +12,7 @@ import { formatMoney, formatNumber } from '../../i18n/format';
 import { useLang } from '../../i18n';
 import { KV_KEYS, kv } from '../../storage/mmkv';
 import { useSession } from '../../store/session';
+import { BrandLogo } from '../../ui/Brand';
 import { Button, Choice, Field, Text } from '../../ui';
 import { spacing } from '../../ui/theme';
 import { checkSubdomain, fetchSignupOptions, signup } from './signupApi';
@@ -29,15 +30,18 @@ type Availability = 'idle' | 'checking' | 'ok' | 'taken' | 'error';
 export function SignupScreen({ onBackToLogin }: { onBackToLogin: () => void }) {
   const { t } = useTranslation();
   const lang = useLang();
-  const signIn = useSession((s) => s.signIn);
+  const signIn = useSession(s => s.signIn);
   const [step, setStep] = useState(0);
   const [formError, setFormError] = useState<string | null>(null);
   const [availability, setAvailability] = useState<Availability>('idle');
   const [availabilityMsg, setAvailabilityMsg] = useState<string | null>(null);
 
-  const options = useQuery({ queryKey: ['signup-options'], queryFn: fetchSignupOptions });
+  const options = useQuery({
+    queryKey: ['signup-options'],
+    queryFn: fetchSignupOptions,
+  });
 
-  const { control, handleSubmit, trigger, watch, setError, setValue, formState } =
+  const { control, handleSubmit, trigger, watch, setError, formState } =
     useForm<SignupForm>({
       resolver: zodResolver(makeSignupSchema(t)),
       defaultValues: {
@@ -92,7 +96,7 @@ export function SignupScreen({ onBackToLogin }: { onBackToLogin: () => void }) {
     }
   };
 
-  const submit = handleSubmit(async (values) => {
+  const submit = handleSubmit(async values => {
     setFormError(null);
     try {
       const res = await signup({
@@ -117,7 +121,9 @@ export function SignupScreen({ onBackToLogin }: { onBackToLogin: () => void }) {
         // Put each server message on its field and jump to the earliest step that has one.
         let earliest = STEP_FIELDS.length;
         for (const [field, messages] of Object.entries(e.fieldErrors)) {
-          const stepIdx = STEP_FIELDS.findIndex((f) => f.includes(field as keyof SignupForm));
+          const stepIdx = STEP_FIELDS.findIndex(f =>
+            f.includes(field as keyof SignupForm),
+          );
           if (stepIdx >= 0) {
             setError(field as keyof SignupForm, { message: messages[0] });
             earliest = Math.min(earliest, stepIdx);
@@ -136,20 +142,35 @@ export function SignupScreen({ onBackToLogin }: { onBackToLogin: () => void }) {
   const categories = options.data?.categories ?? [];
 
   return (
-    <ScrollView contentContainerStyle={styles.wrap} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      contentContainerStyle={styles.wrap}
+      keyboardShouldPersistTaps="handled"
+    >
+      <View style={styles.logo}>
+        <BrandLogo height={36} />
+      </View>
       <Text variant="title">{t('signup.title')}</Text>
       <Text variant="muted">
-        {t('signup.step', { current: formatNumber(step + 1, lang), total: formatNumber(3, lang) })}
+        {t('signup.step', {
+          current: formatNumber(step + 1, lang),
+          total: formatNumber(3, lang),
+        })}
       </Text>
 
       {step === 0 && (
         <View style={styles.group}>
           <Text variant="label">{t('signup.plans')}</Text>
-          {options.isPending ? <Text variant="muted">{t('common.loading')}</Text> : null}
+          {options.isPending ? (
+            <Text variant="muted">{t('common.loading')}</Text>
+          ) : null}
           {options.isError ? (
             <>
               <Text variant="error">{t('signup.optionsFailed')}</Text>
-              <Button title={t('common.retry')} kind="secondary" onPress={() => void options.refetch()} />
+              <Button
+                title={t('common.retry')}
+                kind="secondary"
+                onPress={() => void options.refetch()}
+              />
             </>
           ) : null}
           <Controller
@@ -157,30 +178,40 @@ export function SignupScreen({ onBackToLogin }: { onBackToLogin: () => void }) {
             name="plan"
             render={({ field, fieldState }) => (
               <View style={styles.group}>
-                {plans.map((p) => (
+                {plans.map(p => (
                   <Choice
                     key={p.key}
                     label={p.label}
                     selected={field.value === p.key}
-                    onPress={() => field.onChange(p.key)}>
+                    onPress={() => field.onChange(p.key)}
+                  >
                     <Text variant="label">{p.label}</Text>
                     {p.blurb ? <Text variant="muted">{p.blurb}</Text> : null}
                     <Text>
                       {t('signup.perMonth', {
-                        amount: formatMoney(String(p.price_monthly_quote), lang),
+                        amount: formatMoney(
+                          String(p.price_monthly_quote),
+                          lang,
+                        ),
                       })}
                     </Text>
                     <Text variant="muted">
                       {p.staff_accounts === null
                         ? t('signup.staffUnlimited')
-                        : t('signup.staffCount', { count: formatNumber(p.staff_accounts, lang) })}
+                        : t('signup.staffCount', {
+                            count: formatNumber(p.staff_accounts, lang),
+                          })}
                     </Text>
                     {p.custom_domain_included ? (
-                      <Text variant="muted">{t('signup.customDomainIncluded')}</Text>
+                      <Text variant="muted">
+                        {t('signup.customDomainIncluded')}
+                      </Text>
                     ) : null}
                   </Choice>
                 ))}
-                {fieldState.error ? <Text variant="error">{fieldState.error.message}</Text> : null}
+                {fieldState.error ? (
+                  <Text variant="error">{fieldState.error.message}</Text>
+                ) : null}
               </View>
             )}
           />
@@ -210,35 +241,42 @@ export function SignupScreen({ onBackToLogin }: { onBackToLogin: () => void }) {
                 label={t('login.shopAddress')}
                 suffix={t('login.shopAddressSuffix')}
                 value={field.value}
-                onChangeText={(v) => field.onChange(v.toLowerCase())}
+                onChangeText={v => field.onChange(v.toLowerCase())}
                 autoCapitalize="none"
                 autoCorrect={false}
                 error={fieldState.error?.message}
               />
             )}
           />
-          {availability === 'checking' ? <Text variant="muted">{t('signup.checking')}</Text> : null}
+          {availability === 'checking' ? (
+            <Text variant="muted">{t('signup.checking')}</Text>
+          ) : null}
           {availability === 'ok' ? <Text>{t('signup.available')}</Text> : null}
           {availability === 'taken' ? (
             <Text variant="error">{availabilityMsg ?? t('signup.taken')}</Text>
           ) : null}
-          {availability === 'error' ? <Text variant="error">{availabilityMsg}</Text> : null}
+          {availability === 'error' ? (
+            <Text variant="error">{availabilityMsg}</Text>
+          ) : null}
           <Text variant="label">{t('signup.category')}</Text>
           <Controller
             control={control}
             name="category"
             render={({ field, fieldState }) => (
               <View style={styles.group}>
-                {categories.map((c) => (
+                {categories.map(c => (
                   <Choice
                     key={c.key}
                     label={c.label}
                     selected={field.value === c.key}
-                    onPress={() => field.onChange(c.key)}>
+                    onPress={() => field.onChange(c.key)}
+                  >
                     <Text>{c.label}</Text>
                   </Choice>
                 ))}
-                {fieldState.error ? <Text variant="error">{fieldState.error.message}</Text> : null}
+                {fieldState.error ? (
+                  <Text variant="error">{fieldState.error.message}</Text>
+                ) : null}
               </View>
             )}
           />
@@ -328,17 +366,30 @@ export function SignupScreen({ onBackToLogin }: { onBackToLogin: () => void }) {
           disabled={step === 1 && availability === 'checking'}
         />
       ) : (
-        <Button title={t('signup.create')} onPress={submit} loading={formState.isSubmitting} />
+        <Button
+          title={t('signup.create')}
+          onPress={submit}
+          loading={formState.isSubmitting}
+        />
       )}
       {step > 0 ? (
-        <Button title={t('common.back')} kind="secondary" onPress={() => setStep(step - 1)} />
+        <Button
+          title={t('common.back')}
+          kind="secondary"
+          onPress={() => setStep(step - 1)}
+        />
       ) : null}
-      <Button title={t('signup.haveAccount')} kind="secondary" onPress={onBackToLogin} />
+      <Button
+        title={t('signup.haveAccount')}
+        kind="secondary"
+        onPress={onBackToLogin}
+      />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  logo: { alignItems: 'flex-start', marginBottom: spacing.sm },
   wrap: { padding: spacing.xl, gap: spacing.md, flexGrow: 1 },
   group: { gap: spacing.md },
 });

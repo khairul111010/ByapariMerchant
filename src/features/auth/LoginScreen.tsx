@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -10,6 +10,7 @@ import { queryClient } from '../../app/queryClient';
 import { useSession } from '../../store/session';
 import { KV_KEYS, kv } from '../../storage/mmkv';
 import { storeApiBaseUrl } from '../../config';
+import { BrandLogo } from '../../ui/Brand';
 import { Button, Field, Text } from '../../ui';
 import { spacing } from '../../ui/theme';
 import { login } from './api';
@@ -25,7 +26,7 @@ export function LoginScreen({
   onSignup: () => void;
 }) {
   const { t } = useTranslation();
-  const signIn = useSession((s) => s.signIn);
+  const signIn = useSession(s => s.signIn);
   const [formError, setFormError] = useState<string | null>(null);
 
   const schema = z.object({
@@ -37,7 +38,11 @@ export function LoginScreen({
 
   const { control, handleSubmit, formState } = useForm<Form>({
     resolver: zodResolver(schema),
-    defaultValues: { shop: kv.getString(KV_KEYS.shopAddress) ?? '', email: '', password: '' },
+    defaultValues: {
+      shop: kv.getString(KV_KEYS.shopAddress) ?? '',
+      email: '',
+      password: '',
+    },
   });
 
   const onSubmit = handleSubmit(async ({ shop, email, password }) => {
@@ -67,7 +72,13 @@ export function LoginScreen({
   });
 
   return (
-    <ScrollView contentContainerStyle={styles.wrap} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      contentContainerStyle={styles.wrap}
+      keyboardShouldPersistTaps="handled"
+    >
+      <View style={styles.logo}>
+        <BrandLogo height={44} />
+      </View>
       <Text variant="title">{t('login.title')}</Text>
       <Controller
         control={control}
@@ -115,13 +126,27 @@ export function LoginScreen({
         )}
       />
       {formError ? <Text variant="error">{formError}</Text> : null}
-      <Button title={t('login.signIn')} onPress={onSubmit} loading={formState.isSubmitting} />
+      <Button
+        title={t('login.signIn')}
+        onPress={onSubmit}
+        loading={formState.isSubmitting}
+      />
       <Button title={t('login.forgot')} kind="secondary" onPress={onForgot} />
-      <Button title={t('signup.createShop')} kind="secondary" onPress={onSignup} />
+      <Button
+        title={t('signup.createShop')}
+        kind="secondary"
+        onPress={onSignup}
+      />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { padding: spacing.xl, gap: spacing.md, flexGrow: 1, justifyContent: 'center' },
+  logo: { alignItems: 'flex-start', marginBottom: spacing.lg },
+  wrap: {
+    padding: spacing.xl,
+    gap: spacing.md,
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
 });

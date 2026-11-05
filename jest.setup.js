@@ -88,3 +88,20 @@ jest.mock('react-native-vision-camera', () => ({
   useCameraPermission: () => ({ hasPermission: false, canRequestPermission: true, requestPermission: jest.fn() }),
 }));
 jest.mock('react-native-vision-camera-barcode-scanner', () => ({ CodeScanner: () => null }));
+
+jest.mock('@react-native-documents/picker', () => ({
+  pick: jest.fn().mockRejectedValue({ code: 'OPERATION_CANCELED' }),
+  types: { csv: ['text/csv'], plainText: 'text/plain' },
+  errorCodes: { OPERATION_CANCELED: 'OPERATION_CANCELED' },
+  isErrorWithCode: (e) => !!e && typeof e === 'object' && 'code' in e,
+}));
+
+jest.mock('react-native-svg', () => {
+  const React = require('react');
+  const mk = name => props => React.createElement(name, props, props.children);
+  return { __esModule: true, default: mk('Svg'), Svg: mk('Svg'), Path: mk('Path') };
+});
+jest.mock('@react-native-clipboard/clipboard', () => ({
+  __esModule: true,
+  default: { setString: jest.fn(), getString: jest.fn().mockResolvedValue('') },
+}));

@@ -7,16 +7,25 @@ import { spacing } from '../../ui/theme';
 
 export function SuspendedScreen() {
   const { t } = useTranslation();
-  const signOut = useSession((s) => s.signOut);
+  const signOut = useSession(s => s.signOut);
   return (
     <View style={styles.wrap}>
       <Text variant="title">{t('suspended.title')}</Text>
       <Text>{t('suspended.body')}</Text>
-      <Button title={t('common.signOut')} kind="secondary" onPress={() => void signOut()} />
+      <Button
+        title={t('common.signOut')}
+        kind="secondary"
+        onPress={() => void signOut()}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, padding: spacing.xl, justifyContent: 'center', gap: spacing.md },
+  wrap: {
+    flex: 1,
+    padding: spacing.xl,
+    justifyContent: 'center',
+    gap: spacing.md,
+  },
 });

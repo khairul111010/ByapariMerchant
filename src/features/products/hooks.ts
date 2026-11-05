@@ -7,6 +7,7 @@ import {
   createProduct,
   createVariant,
   deleteProduct,
+  describeProduct,
   deleteProductImage,
   deleteVariant,
   updateProduct,
@@ -152,3 +153,6 @@ export function useDeleteProduct(id: number) {
     },
   });
 }
+
+export const useDescribeProduct = () =>
+  useMutation({ mutationFn: (v: { name: string; categoryId: number | null }) => describeProduct(v.name, v.categoryId) });

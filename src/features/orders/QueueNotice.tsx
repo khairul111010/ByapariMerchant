@@ -15,22 +15,39 @@ export function QueueNotice({ orderId }: { orderId: number }) {
   }
   return (
     <View style={styles.wrap}>
-      {jobs.map((j) => (
+      {jobs.map(j => (
         <View key={j.id} style={styles.item}>
           <Text style={styles.text}>
             {j.state === 'failed'
-              ? t('queue.failed', { reason: t(`errors.codes.${j.error}`, { defaultValue: t(`errors.${j.error}`, { defaultValue: j.error }) }) })
+              ? t('queue.failed', {
+                  reason: t(`errors.codes.${j.error}`, {
+                    defaultValue: t(`errors.${j.error}`, {
+                      defaultValue: j.error,
+                    }),
+                  }),
+                })
               : j.state === 'syncing'
-                ? t('queue.syncing')
-                : t('queue.queued')}
+              ? t('queue.syncing')
+              : t('queue.queued')}
           </Text>
           {j.state === 'failed' ? (
             <View style={styles.row}>
               <View style={styles.flex}>
-                <Button title={t('queue.retry')} kind="secondary" onPress={() => { offlineQueue.retry(j.id); void offlineQueue.flush(); }} />
+                <Button
+                  title={t('queue.retry')}
+                  kind="secondary"
+                  onPress={() => {
+                    offlineQueue.retry(j.id);
+                    void offlineQueue.flush();
+                  }}
+                />
               </View>
               <View style={styles.flex}>
-                <Button title={t('queue.discard')} kind="secondary" onPress={() => offlineQueue.discard(j.id)} />
+                <Button
+                  title={t('queue.discard')}
+                  kind="secondary"
+                  onPress={() => offlineQueue.discard(j.id)}
+                />
               </View>
             </View>
           ) : null}
@@ -41,7 +58,12 @@ export function QueueNotice({ orderId }: { orderId: number }) {
 }
 
 const styles = StyleSheet.create({
-  wrap: { backgroundColor: colors.warningBg, borderRadius: radius.md, padding: spacing.md, gap: spacing.sm },
+  wrap: {
+    backgroundColor: colors.warningBg,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
   item: { gap: spacing.sm },
   text: { color: colors.warningText },
   row: { flexDirection: 'row', gap: spacing.sm },

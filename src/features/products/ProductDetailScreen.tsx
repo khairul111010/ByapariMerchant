@@ -6,7 +6,7 @@ import { Variant } from '../../api/schemas/catalogue';
 import { formatMoney, formatNumber } from '../../i18n/format';
 import { useLang } from '../../i18n';
 import { Button, Skeleton, Text } from '../../ui';
-import { colors, radius, spacing } from '../../ui/theme';
+import { colors, spacing, cardStyle } from '../../ui/theme';
 import { useAdjustStock, useProduct } from './hooks';
 import { DeleteProduct } from './DeleteProduct';
 import { ProductImages } from './ProductImages';
@@ -187,9 +187,7 @@ export function ProductDetailScreen({
 const styles = StyleSheet.create({
   wrap: { padding: spacing.lg, gap: spacing.md, backgroundColor: colors.bg },
   card: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.lg,
+    ...cardStyle,
     padding: spacing.md,
     gap: spacing.sm,
   },

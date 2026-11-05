@@ -85,6 +85,15 @@ export const categorySchema = z.object({
   products_count: z.number(),
 });
 export const categoriesSchema = z.object({ data: z.array(categorySchema) });
+/**
+ * Create/update return the single category in `data`. Newer backends add `position` and
+ * `products_count` (same shape as a list row); the live server may not yet, so they are optional
+ * here. The list endpoint always has them and the app re-reads it after every save.
+ */
+export const categoryEnvelopeSchema = z.object({
+  data: categorySchema.partial({ position: true, products_count: true }),
+});
+export const messageSchema = z.object({ message: z.string() });
 
 export const stockHistorySchema = z.object({
   data: z.array(

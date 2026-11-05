@@ -1,9 +1,15 @@
 <resources>
 
-    <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
-        <!-- Customize your theme here. -->
+    <!-- Light only: the app's own UI is light, so a phone in dark mode must not tint native parts. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
+        <!-- Cream behind everything, so there is no white/black flash while the app starts. -->
+        <item name="android:windowBackground">@color/app_background</item>
+        <item name="colorPrimary">@color/brand_red</item>
+        <item name="colorAccent">@color/brand_red</item>
+        <!-- Text cursor and selection handles in the brand colour. -->
+        <item name="android:textColorHighlight">#33ED1C24</item>
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 
 </resources>

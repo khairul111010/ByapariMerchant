@@ -9,8 +9,8 @@ import { authenticate } from './biometric';
 
 export function LockScreen() {
   const { t } = useTranslation();
-  const unlock = useLock((s) => s.unlock);
-  const signOut = useSession((s) => s.signOut);
+  const unlock = useLock(s => s.unlock);
+  const signOut = useSession(s => s.signOut);
   const [failed, setFailed] = useState(false);
 
   const prompt = useCallback(async () => {
@@ -32,11 +32,20 @@ export function LockScreen() {
       {failed ? <Text variant="error">{t('lock.failed')}</Text> : null}
       <Button title={t('lock.unlock')} onPress={prompt} />
       {/* Escape hatch if the fingerprint was removed or the sensor is broken. */}
-      <Button title={t('common.signOut')} kind="secondary" onPress={() => void signOut()} />
+      <Button
+        title={t('common.signOut')}
+        kind="secondary"
+        onPress={() => void signOut()}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, padding: spacing.xl, justifyContent: 'center', gap: spacing.md },
+  wrap: {
+    flex: 1,
+    padding: spacing.xl,
+    justifyContent: 'center',
+    gap: spacing.md,
+  },
 });

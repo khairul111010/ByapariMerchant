@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Animated,
+  Easing,
   Pressable,
   StyleSheet,
   Text as RNText,
@@ -9,16 +11,38 @@ import {
   TextProps,
   View,
 } from 'react-native';
-import { colors, font, radius, spacing, touch } from './theme';
+import { colors, font, radius, shadow, spacing, touch, type } from './theme';
 
-type Variant = 'body' | 'title' | 'label' | 'muted' | 'error';
+type Variant =
+  | 'display'
+  | 'title'
+  | 'subtitle'
+  | 'body'
+  | 'label'
+  | 'small'
+  | 'muted'
+  | 'caption'
+  | 'error';
 
 const textStyles = StyleSheet.create({
-  body: { fontFamily: font.regular, fontSize: 16, color: colors.text, lineHeight: 26 },
-  title: { fontFamily: font.bold, fontSize: 24, color: colors.text, lineHeight: 36 },
-  label: { fontFamily: font.bold, fontSize: 15, color: colors.text, lineHeight: 24 },
-  muted: { fontFamily: font.regular, fontSize: 14, color: colors.textMuted, lineHeight: 22 },
-  error: { fontFamily: font.regular, fontSize: 14, color: colors.danger, lineHeight: 22 },
+  display: { fontFamily: font.bold, ...type.display, color: colors.text },
+  title: { fontFamily: font.bold, ...type.title, color: colors.text },
+  subtitle: { fontFamily: font.bold, ...type.subtitle, color: colors.text },
+  body: { fontFamily: font.regular, ...type.body, color: colors.text },
+  label: {
+    fontFamily: font.bold,
+    fontSize: 15,
+    lineHeight: 24,
+    color: colors.text,
+  },
+  small: { fontFamily: font.regular, ...type.small, color: colors.text },
+  muted: { fontFamily: font.regular, ...type.small, color: colors.textMuted },
+  caption: {
+    fontFamily: font.regular,
+    ...type.caption,
+    color: colors.textMuted,
+  },
+  error: { fontFamily: font.bold, ...type.small, color: colors.danger },
 });
 
 export function Text({
@@ -26,7 +50,26 @@ export function Text({
   style,
   ...rest
 }: TextProps & { variant?: Variant }) {
-  return <RNText {...rest} style={[textStyles[variant], style]} />;
+  return (
+    <RNText
+      accessibilityRole={variant === 'error' ? 'alert' : rest.accessibilityRole}
+      {...rest}
+      style={[textStyles[variant], style]}
+    />
+  );
+}
+
+/** Scales down a little under the finger and springs back: the whole app's "press" feel. */
+function usePress() {
+  const scale = useRef(new Animated.Value(1)).current;
+  const to = (v: number) =>
+    Animated.spring(scale, {
+      toValue: v,
+      useNativeDriver: true,
+      speed: 40,
+      bounciness: 4,
+    }).start();
+  return { scale, onPressIn: () => to(0.97), onPressOut: () => to(1) };
 }
 
 export function Button({
@@ -42,59 +85,95 @@ export function Button({
   disabled?: boolean;
   kind?: 'primary' | 'secondary';
 }) {
+  const press = usePress();
   const inactive = disabled || loading;
+  const primary = kind === 'primary';
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={title}
       accessibilityState={{ disabled: !!inactive, busy: !!loading }}
       onPress={onPress}
+      onPressIn={press.onPressIn}
+      onPressOut={press.onPressOut}
       disabled={inactive}
-      style={[
-        buttonStyles.base,
-        kind === 'primary' ? buttonStyles.primary : buttonStyles.secondary,
-        inactive && buttonStyles.inactive,
-      ]}>
-      {loading ? (
-        <ActivityIndicator color={kind === 'primary' ? colors.primaryText : colors.primary} />
-      ) : (
-        <Text
-          variant="label"
-          style={{ color: kind === 'primary' ? colors.primaryText : colors.primary }}>
-          {title}
-        </Text>
-      )}
+    >
+      <Animated.View
+        style={[
+          buttonStyles.base,
+          primary ? buttonStyles.primary : buttonStyles.secondary,
+          inactive && buttonStyles.inactive,
+          { transform: [{ scale: press.scale }] },
+        ]}
+      >
+        {loading ? (
+          <ActivityIndicator
+            color={primary ? colors.primaryText : colors.primary}
+          />
+        ) : (
+          <Text
+            variant="label"
+            style={[
+              buttonStyles.label,
+              { color: primary ? colors.primaryText : colors.text },
+            ]}
+          >
+            {title}
+          </Text>
+        )}
+      </Animated.View>
     </Pressable>
   );
 }
 
 const buttonStyles = StyleSheet.create({
   base: {
-    minHeight: touch + 4,
+    minHeight: 54,
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
   },
-  primary: { backgroundColor: colors.primary },
-  secondary: { backgroundColor: colors.bg, borderWidth: 1.5, borderColor: colors.primary },
-  inactive: { opacity: 0.55 },
+  primary: { backgroundColor: colors.primary, ...shadow.card },
+  secondary: { backgroundColor: colors.card, ...shadow.card },
+  inactive: { opacity: 0.5 },
+  label: { fontSize: 16, textAlign: 'center' },
 });
 
 export function Field({
   label,
   error,
   suffix,
+  onFocus,
+  onBlur,
   ...input
 }: TextInputProps & { label: string; error?: string; suffix?: string }) {
+  const [focused, setFocused] = useState(false);
   return (
     <View style={fieldStyles.wrap}>
-      <Text variant="label">{label}</Text>
-      <View style={[fieldStyles.row, error ? fieldStyles.rowError : null]}>
+      <Text variant="label" style={fieldStyles.label}>
+        {label}
+      </Text>
+      <View
+        style={[
+          fieldStyles.row,
+          focused && fieldStyles.rowFocus,
+          error ? fieldStyles.rowError : null,
+        ]}
+      >
         <TextInput
           {...input}
           accessibilityLabel={label}
           placeholderTextColor={colors.textMuted}
+          selectionColor={colors.primary}
+          onFocus={e => {
+            setFocused(true);
+            onFocus?.(e);
+          }}
+          onBlur={e => {
+            setFocused(false);
+            onBlur?.(e);
+          }}
           style={fieldStyles.input}
         />
         {suffix ? <Text variant="muted">{suffix}</Text> : null}
@@ -106,20 +185,30 @@ export function Field({
 
 const fieldStyles = StyleSheet.create({
   wrap: { gap: spacing.xs },
+  label: { color: colors.textMuted, fontSize: 13 },
   row: {
-    minHeight: touch + 4,
+    minHeight: 54,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: colors.border,
+    borderColor: 'transparent',
     borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    backgroundColor: colors.bg,
+    paddingHorizontal: spacing.lg,
+    backgroundColor: colors.card,
+    ...shadow.card,
   },
+  rowFocus: { borderColor: colors.primary },
   rowError: { borderColor: colors.danger },
-  input: { flex: 1, fontFamily: font.regular, fontSize: 16, color: colors.text, paddingVertical: spacing.sm },
+  input: {
+    flex: 1,
+    fontFamily: font.regular,
+    fontSize: 16,
+    color: colors.text,
+    paddingVertical: spacing.sm,
+  },
 });
 
+/** A selectable card with a radio dot, for "pick one" lists. */
 export function Choice({
   selected,
   onPress,
@@ -131,14 +220,28 @@ export function Choice({
   children: React.ReactNode;
   label: string;
 }) {
+  const press = usePress();
   return (
     <Pressable
       accessibilityRole="radio"
       accessibilityLabel={label}
       accessibilityState={{ selected }}
       onPress={onPress}
-      style={[choiceStyles.base, selected && choiceStyles.selected]}>
-      {children}
+      onPressIn={press.onPressIn}
+      onPressOut={press.onPressOut}
+    >
+      <Animated.View
+        style={[
+          choiceStyles.base,
+          selected && choiceStyles.selected,
+          { transform: [{ scale: press.scale }] },
+        ]}
+      >
+        <View style={choiceStyles.body}>{children}</View>
+        <View style={[choiceStyles.radio, selected && choiceStyles.radioOn]}>
+          {selected ? <View style={choiceStyles.dot} /> : null}
+        </View>
+      </Animated.View>
     </Pressable>
   );
 }
@@ -146,17 +249,73 @@ export function Choice({
 const choiceStyles = StyleSheet.create({
   base: {
     minHeight: touch,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
     borderWidth: 1.5,
-    borderColor: colors.border,
+    borderColor: 'transparent',
     borderRadius: radius.lg,
-    padding: spacing.md,
-    gap: spacing.xs,
-    backgroundColor: colors.bg,
+    padding: spacing.lg,
+    backgroundColor: colors.card,
+    ...shadow.card,
   },
-  selected: { borderColor: colors.primary, borderWidth: 2.5, backgroundColor: colors.surface },
+  selected: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primarySoft,
+  },
+  body: { flex: 1, gap: spacing.xs },
+  radio: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radioOn: { borderColor: colors.primary },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.primary,
+  },
 });
 
-/** Placeholder block shown instead of a spinner while content loads. */
+/** A soft pulsing placeholder shown instead of a spinner while content loads. */
 export function Skeleton({ height = 20 }: { height?: number }) {
-  return <View style={{ height, borderRadius: radius.md, backgroundColor: colors.surface, marginBottom: spacing.sm }} />;
+  const pulse = useRef(new Animated.Value(0.55)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, {
+          toValue: 1,
+          duration: 700,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulse, {
+          toValue: 0.55,
+          duration: 700,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [pulse]);
+  return (
+    <Animated.View
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={{
+        height,
+        borderRadius: radius.lg,
+        backgroundColor: colors.surface,
+        marginBottom: spacing.sm,
+        opacity: pulse,
+      }}
+    />
+  );
 }

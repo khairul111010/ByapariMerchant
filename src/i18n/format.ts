@@ -41,7 +41,7 @@ export const formatNumber = (n: number | string, lang: Lang): string =>
 
 const DHAKA_OFFSET_MS = 6 * 60 * 60 * 1000; // UTC+6, no DST
 
-const MONTHS: Record<Lang, string[]> = {
+export const MONTHS: Record<Lang, string[]> = {
   en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   bn: ['জানু', 'ফেব্রু', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'],
 };

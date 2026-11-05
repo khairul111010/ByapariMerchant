@@ -14,6 +14,11 @@ export function errorMessage(err: unknown, t: TFunction): string {
         return msg;
       }
     }
+    // A 422 with a message but no field and no code (e.g. "a store must always have one owner")
+    // has nothing to highlight, so the server's own sentence is the useful answer.
+    if (err.kind === 'validation' && Object.keys(err.fieldErrors).length === 0 && err.message && err.message !== err.kind) {
+      return err.message;
+    }
     return t(`errors.${err.kind}`);
   }
   return t('errors.server');

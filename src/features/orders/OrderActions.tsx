@@ -7,7 +7,7 @@ import { OrderDetail } from '../../api/schemas/orders';
 import { formatDateTime, formatMoney } from '../../i18n/format';
 import { useLang } from '../../i18n';
 import { Button, Choice, Field, Text } from '../../ui';
-import { colors, radius, spacing } from '../../ui/theme';
+import { spacing, cardStyle } from '../../ui/theme';
 import { AdvanceMethod } from './api';
 import {
   useAddAdvance,
@@ -17,7 +17,7 @@ import {
   useVerifyPayment,
 } from './hooks';
 
-const card = { borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, padding: spacing.md, gap: spacing.sm } as const;
+const card = { ...cardStyle, padding: spacing.md, gap: spacing.sm } as const;
 
 /** Decimal like "300" or "300.50"; the server still decides if it is allowed. */
 const AMOUNT_RE = /^\d+(\.\d{1,2})?$/;
@@ -37,7 +37,8 @@ export function PaymentSection({ order }: { order: OrderDetail }) {
     <View style={card}>
       <Text variant="label">{t('orders.paymentTitle')}</Text>
       <Text>
-        {t(`orders.payment.${p.method}`, { defaultValue: p.method })} · {formatMoney(p.amount, lang)}
+        {t(`orders.payment.${p.method}`, { defaultValue: p.method })} ·{' '}
+        {formatMoney(p.amount, lang)}
       </Text>
       {p.reference_number ? (
         <Text selectable>
@@ -45,13 +46,26 @@ export function PaymentSection({ order }: { order: OrderDetail }) {
         </Text>
       ) : null}
       <Text variant="muted">
-        {pending ? t('orders.paymentPending') : t(`orders.paymentStatus.${p.status}`, { defaultValue: p.status })}
+        {pending
+          ? t('orders.paymentPending')
+          : t(`orders.paymentStatus.${p.status}`, { defaultValue: p.status })}
         {p.paid_at ? ` · ${formatDateTime(p.paid_at, lang)}` : ''}
       </Text>
       {pending ? (
         <>
-          <Button title={t('orders.verify')} loading={verify.isPending} disabled={reject.isPending} onPress={() => verify.mutate()} />
-          <Button title={t('orders.reject')} kind="secondary" loading={reject.isPending} disabled={verify.isPending} onPress={() => reject.mutate()} />
+          <Button
+            title={t('orders.verify')}
+            loading={verify.isPending}
+            disabled={reject.isPending}
+            onPress={() => verify.mutate()}
+          />
+          <Button
+            title={t('orders.reject')}
+            kind="secondary"
+            loading={reject.isPending}
+            disabled={verify.isPending}
+            onPress={() => reject.mutate()}
+          />
         </>
       ) : null}
       {err ? <Text variant="error">{errorMessage(err, t)}</Text> : null}
@@ -76,7 +90,12 @@ export function AdvanceSection({ order }: { order: OrderDetail }) {
       return;
     }
     add.mutate(
-      { method, amount: amount.trim(), reference_number: method === 'cash' ? undefined : ref.trim() || undefined },
+      {
+        method,
+        amount: amount.trim(),
+        reference_number:
+          method === 'cash' ? undefined : ref.trim() || undefined,
+      },
       {
         onSuccess: () => {
           setOpen(false);
@@ -89,24 +108,37 @@ export function AdvanceSection({ order }: { order: OrderDetail }) {
 
   // Server message for the amount field (e.g. exceeds the amount due) is shown verbatim.
   const amountError =
-    add.error instanceof ApiError && add.error.kind === 'validation' ? add.error.fieldErrors.amount?.[0] : undefined;
-  const otherError = add.error && !amountError ? errorMessage(add.error, t) : null;
+    add.error instanceof ApiError && add.error.kind === 'validation'
+      ? add.error.fieldErrors.amount?.[0]
+      : undefined;
+  const otherError =
+    add.error && !amountError ? errorMessage(add.error, t) : null;
 
   return (
     <View style={card}>
       <Text variant="label">{t('orders.advanceTitle')}</Text>
-      {order.advance_payments.map((a) => (
+      {order.advance_payments.map(a => (
         <Text key={a.id}>
-          {t(`orders.advanceMethod.${a.method}`, { defaultValue: a.method })} · {formatMoney(a.amount, lang)}
+          {t(`orders.advanceMethod.${a.method}`, { defaultValue: a.method })} ·{' '}
+          {formatMoney(a.amount, lang)}
           {a.reference_number ? ` · ${a.reference_number}` : ''}
         </Text>
       ))}
       {!open ? (
-        <Button title={t('orders.advanceAdd')} kind="secondary" onPress={() => setOpen(true)} />
+        <Button
+          title={t('orders.advanceAdd')}
+          kind="secondary"
+          onPress={() => setOpen(true)}
+        />
       ) : (
         <View style={styles.form}>
-          {(['cash', 'manual_bkash', 'manual_nagad'] as const).map((m) => (
-            <Choice key={m} label={t(`orders.advanceMethod.${m}`)} selected={method === m} onPress={() => setMethod(m)}>
+          {(['cash', 'manual_bkash', 'manual_nagad'] as const).map(m => (
+            <Choice
+              key={m}
+              label={t(`orders.advanceMethod.${m}`)}
+              selected={method === m}
+              onPress={() => setMethod(m)}
+            >
               <Text>{t(`orders.advanceMethod.${m}`)}</Text>
             </Choice>
           ))}
@@ -117,10 +149,25 @@ export function AdvanceSection({ order }: { order: OrderDetail }) {
             keyboardType="decimal-pad"
             error={amountError ?? localError ?? undefined}
           />
-          {method !== 'cash' ? <Field label={t('orders.advanceRef')} value={ref} onChangeText={setRef} autoCapitalize="characters" /> : null}
+          {method !== 'cash' ? (
+            <Field
+              label={t('orders.advanceRef')}
+              value={ref}
+              onChangeText={setRef}
+              autoCapitalize="characters"
+            />
+          ) : null}
           {otherError ? <Text variant="error">{otherError}</Text> : null}
-          <Button title={t('orders.advanceSave')} loading={add.isPending} onPress={submit} />
-          <Button title={t('common.cancel')} kind="secondary" onPress={() => setOpen(false)} />
+          <Button
+            title={t('orders.advanceSave')}
+            loading={add.isPending}
+            onPress={submit}
+          />
+          <Button
+            title={t('common.cancel')}
+            kind="secondary"
+            onPress={() => setOpen(false)}
+          />
         </View>
       )}
     </View>
@@ -148,14 +195,21 @@ export function CourierSection({ order }: { order: OrderDetail }) {
           ) : null}
           <Text variant="muted">
             {t('orders.courierStatus')}: {booking.status}
-            {booking.booked_at ? ` · ${formatDateTime(booking.booked_at, lang)}` : ''}
+            {booking.booked_at
+              ? ` · ${formatDateTime(booking.booked_at, lang)}`
+              : ''}
           </Text>
-          <Button title={t('orders.courierRefresh')} kind="secondary" loading={refresh.isPending} onPress={() => refresh.mutate(booking.driver)} />
+          <Button
+            title={t('orders.courierRefresh')}
+            kind="secondary"
+            loading={refresh.isPending}
+            onPress={() => refresh.mutate(booking.driver)}
+          />
         </>
       ) : drivers.length === 0 ? (
         <Text variant="muted">{t('orders.courierNone')}</Text>
       ) : (
-        drivers.map((d) => (
+        drivers.map(d => (
           <Button
             key={d}
             title={t('orders.courierBook', { driver: d })}

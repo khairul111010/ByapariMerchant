@@ -35,13 +35,27 @@ export interface ClientDeps {
   xhrImpl?: new () => XMLHttpRequest;
 }
 
+/** Dev-only diagnostics: no tokens, bodies or server text; just what failed and where. */
+function logFailure(method: string, path: string, err: ApiError) {
+  if (__DEV__) {
+    const fields = Object.keys(err.fieldErrors);
+    console.log(
+      `[api] ${method} ${path} -> ${err.status} ${err.kind}${
+        err.code ? ` code=${err.code}` : ''
+      }${fields.length ? ` fields=${fields.join(',')}` : ''}`,
+    );
+  }
+}
+
 const buildQuery = (query: RequestOptions<unknown>['query']): string => {
   if (!query) {
     return '';
   }
   const parts = Object.entries(query)
     .filter(([, v]) => v !== undefined && v !== null && v !== '')
-    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`);
+    .map(
+      ([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`,
+    );
   return parts.length ? `?${parts.join('&')}` : '';
 };
 
@@ -83,7 +97,9 @@ export function createApiClient(deps: ClientDeps) {
         signal: opts.signal,
       });
     } catch {
-      throw networkError();
+      const err = networkError();
+      logFailure(method, path, err);
+      throw err;
     }
 
     let json: unknown;
@@ -98,6 +114,7 @@ export function createApiClient(deps: ClientDeps) {
 
     if (!res.ok) {
       const err = mapError(res.status, (json ?? {}) as ErrorBody);
+      logFailure(method, path, err);
       if (err.kind === 'unauthenticated' && !opts.anonymous) {
         deps.onUnauthorized();
       } else if (err.kind === 'store_suspended') {
@@ -111,6 +128,13 @@ export function createApiClient(deps: ClientDeps) {
     }
     const parsed = opts.schema.safeParse(json);
     if (!parsed.success) {
+      if (__DEV__) {
+        console.log(
+          `[api] ${method} ${path} -> response failed validation at ${parsed.error.issues
+            .map(i => i.path.join('.'))
+            .join(', ')}`,
+        );
+      }
       throw invalidResponse();
     }
     return parsed.data;
@@ -120,7 +144,11 @@ export function createApiClient(deps: ClientDeps) {
   function upload<T>(
     path: string,
     form: FormData,
-    opts: { schema: ZodType<T>; onProgress?: (fraction: number) => void; signal?: AbortSignal },
+    opts: {
+      schema: ZodType<T>;
+      onProgress?: (fraction: number) => void;
+      signal?: AbortSignal;
+    },
   ): Promise<T> {
     const base = deps.getStoreBaseUrl();
     if (!base) {
@@ -135,14 +163,18 @@ export function createApiClient(deps: ClientDeps) {
       if (token) {
         xhr.setRequestHeader('Authorization', `Bearer ${token}`);
       }
-      xhr.upload.onprogress = (e) => {
+      xhr.upload.onprogress = e => {
         if (e.lengthComputable && e.total > 0) {
           opts.onProgress?.(e.loaded / e.total);
         }
       };
-      xhr.onerror = () => reject(networkError());
-      xhr.ontimeout = () => reject(networkError());
-      xhr.onabort = () => reject(networkError());
+      const fail = (err: ApiError) => {
+        logFailure('POST', path, err);
+        reject(err);
+      };
+      xhr.onerror = () => fail(networkError());
+      xhr.ontimeout = () => fail(networkError());
+      xhr.onabort = () => fail(networkError());
       xhr.onload = () => {
         let json: unknown;
         try {
@@ -157,11 +189,22 @@ export function createApiClient(deps: ClientDeps) {
           } else if (err.kind === 'store_suspended') {
             deps.onSuspended();
           }
-          reject(err);
+          fail(err);
           return;
         }
         const parsed = opts.schema.safeParse(json);
-        parsed.success ? resolve(parsed.data) : reject(invalidResponse());
+        if (parsed.success) {
+          resolve(parsed.data);
+        } else {
+          if (__DEV__) {
+            console.log(
+              `[api] POST ${path} -> response failed validation at ${parsed.error.issues
+                .map(i => i.path.join('.'))
+                .join(', ')}`,
+            );
+          }
+          reject(invalidResponse());
+        }
       };
       opts.signal?.addEventListener('abort', () => xhr.abort());
       xhr.send(form);
@@ -172,7 +215,8 @@ export function createApiClient(deps: ClientDeps) {
     request,
     upload,
     get: <T>(path: string, o?: RequestOptions<T>) => request<T>('GET', path, o),
-    post: <T>(path: string, o?: RequestOptions<T>) => request<T>('POST', path, o),
+    post: <T>(path: string, o?: RequestOptions<T>) =>
+      request<T>('POST', path, o),
     put: <T>(path: string, o?: RequestOptions<T>) => request<T>('PUT', path, o),
     delete: <T>(path: string, o?: RequestOptions<T>) =>
       request<T>('DELETE', path, o),

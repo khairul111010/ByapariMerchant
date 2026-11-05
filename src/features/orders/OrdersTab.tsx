@@ -5,8 +5,8 @@ import { OrdersListScreen } from './OrdersListScreen';
 
 export function OrdersTab() {
   const [openId, setOpenId] = useState<number | null>(null);
-  const pending = usePendingOrder((s) => s.orderId);
-  const clear = usePendingOrder((s) => s.clear);
+  const pending = usePendingOrder(s => s.orderId);
+  const clear = usePendingOrder(s => s.clear);
 
   // A push tap opens that order's detail, then the request is consumed.
   useEffect(() => {

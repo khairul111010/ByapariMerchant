@@ -1,15 +1,48 @@
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
+} from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useTranslation } from 'react-i18next';
 import { errorMessage } from '../../api/errorMessage';
-import { ORDER_STATUSES, OrderRow, OrderStatus } from '../../api/schemas/orders';
+import {
+  ORDER_STATUSES,
+  OrderRow,
+  OrderStatus,
+} from '../../api/schemas/orders';
 import { formatDateTime, formatMoney } from '../../i18n/format';
 import { useLang } from '../../i18n';
+import { Pill } from '../../ui/Chips';
 import { PendingBanner } from '../shell/PendingBanner';
 import { Button, Skeleton, Text } from '../../ui';
-import { colors, font, radius, spacing, touch } from '../../ui/theme';
+import {
+  colors,
+  font,
+  radius,
+  spacing,
+  touch,
+  cardStyle,
+  shadow,
+} from '../../ui/theme';
 import { useOrders } from './hooks';
+
+type Tone = 'neutral' | 'success' | 'warning' | 'danger' | 'brand';
+const STATUS_TONE: Record<OrderStatus, Tone> = {
+  pending: 'warning',
+  confirmed: 'brand',
+  shipped: 'brand',
+  delivered: 'success',
+  cancelled: 'danger',
+};
+const PAYMENT_TONE: Record<OrderRow['payment_status'], Tone> = {
+  unpaid: 'warning',
+  paid: 'success',
+  failed: 'danger',
+};
 
 export function OrdersListScreen({ onOpen }: { onOpen: (id: number) => void }) {
   const { t } = useTranslation();
@@ -18,24 +51,35 @@ export function OrdersListScreen({ onOpen }: { onOpen: (id: number) => void }) {
   const [q, setQ] = useState('');
   const query = q.trim() || undefined;
   const orders = useOrders({ status, q: query });
-  const rows = useMemo(() => orders.data?.pages.flatMap((p) => p.data) ?? [], [orders.data]);
+  const rows = useMemo(
+    () => orders.data?.pages.flatMap(p => p.data) ?? [],
+    [orders.data],
+  );
 
   const renderRow = ({ item }: { item: OrderRow }) => (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`${item.order_number}, ${item.customer_name}`}
       onPress={() => onOpen(item.id)}
-      style={styles.row}>
+      style={styles.row}
+    >
       <View style={styles.rowTop}>
         <Text variant="label">{item.order_number}</Text>
         <Text variant="label">{formatMoney(item.total, lang)}</Text>
       </View>
       <Text>{item.customer_name}</Text>
-      <Text variant="muted">
-        {t(`orders.status.${item.status}`)} · {t(`orders.payment.${item.payment_method}`)} ·{' '}
-        {t(`orders.paymentStatus.${item.payment_status}`)}
-      </Text>
-      <Text variant="muted">{formatDateTime(item.created_at, lang)}</Text>
+      <View style={styles.pills}>
+        <Pill
+          label={t(`orders.status.${item.status}`)}
+          tone={STATUS_TONE[item.status]}
+        />
+        <Pill
+          label={t(`orders.paymentStatus.${item.payment_status}`)}
+          tone={PAYMENT_TONE[item.payment_status]}
+        />
+        <Pill label={t(`orders.payment.${item.payment_method}`)} />
+      </View>
+      <Text variant="caption">{formatDateTime(item.created_at, lang)}</Text>
     </Pressable>
   );
 
@@ -52,15 +96,23 @@ export function OrdersListScreen({ onOpen }: { onOpen: (id: number) => void }) {
           accessibilityLabel={t('orders.search')}
           style={styles.search}
         />
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
-          {[undefined, ...ORDER_STATUSES].map((s) => (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chips}
+        >
+          {[undefined, ...ORDER_STATUSES].map(s => (
             <Pressable
               key={s ?? 'all'}
               accessibilityRole="button"
               accessibilityState={{ selected: status === s }}
               onPress={() => setStatus(s)}
-              style={[styles.chip, status === s && styles.chipOn]}>
-              <Text variant="label" style={status === s ? styles.chipTextOn : undefined}>
+              style={[styles.chip, status === s && styles.chipOn]}
+            >
+              <Text
+                variant="label"
+                style={status === s ? styles.chipTextOn : undefined}
+              >
                 {s ? t(`orders.status.${s}`) : t('orders.all')}
               </Text>
             </Pressable>
@@ -70,20 +122,23 @@ export function OrdersListScreen({ onOpen }: { onOpen: (id: number) => void }) {
 
       {orders.isPending ? (
         <View style={styles.list}>
-          {[0, 1, 2, 3].map((i) => (
+          {[0, 1, 2, 3].map(i => (
             <Skeleton key={i} height={96} />
           ))}
         </View>
       ) : orders.isError && rows.length === 0 ? (
         <View style={styles.center}>
           <Text variant="error">{errorMessage(orders.error, t)}</Text>
-          <Button title={t('common.retry')} onPress={() => void orders.refetch()} />
+          <Button
+            title={t('common.retry')}
+            onPress={() => void orders.refetch()}
+          />
         </View>
       ) : (
         <FlashList
           data={rows}
           renderItem={renderRow}
-          keyExtractor={(o) => String(o.id)}
+          keyExtractor={o => String(o.id)}
           contentContainerStyle={styles.list}
           onEndReached={() => orders.hasNextPage && void orders.fetchNextPage()}
           onEndReachedThreshold={0.5}
@@ -105,8 +160,8 @@ const styles = StyleSheet.create({
   header: { padding: spacing.lg, gap: spacing.sm },
   search: {
     minHeight: touch,
-    borderWidth: 1.5,
-    borderColor: colors.border,
+    backgroundColor: colors.card,
+    ...shadow.card,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     fontFamily: font.regular,
@@ -119,21 +174,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: spacing.md,
     borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: colors.border,
+    backgroundColor: colors.card,
+    ...shadow.card,
   },
   chipOn: { backgroundColor: colors.primary, borderColor: colors.primary },
   chipTextOn: { color: colors.primaryText },
-  list: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xl, gap: spacing.sm },
+  list: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xl,
+    gap: spacing.sm,
+  },
   row: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.lg,
+    ...cardStyle,
     padding: spacing.md,
     marginBottom: spacing.sm,
     minHeight: touch,
     gap: 2,
   },
+  pills: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
   rowTop: { flexDirection: 'row', justifyContent: 'space-between' },
   center: { padding: spacing.xl, gap: spacing.md },
   empty: { textAlign: 'center', padding: spacing.xl },

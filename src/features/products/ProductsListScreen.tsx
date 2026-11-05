@@ -20,7 +20,15 @@ import { useLang } from '../../i18n';
 import { useSession } from '../../store/session';
 import { PendingBanner } from '../shell/PendingBanner';
 import { Button, Skeleton, Text } from '../../ui';
-import { colors, font, radius, spacing, touch } from '../../ui/theme';
+import {
+  colors,
+  font,
+  radius,
+  spacing,
+  touch,
+  cardStyle,
+  shadow,
+} from '../../ui/theme';
 import { useProducts } from './hooks';
 import { absoluteUrl } from './imageUrl';
 
@@ -36,11 +44,15 @@ export function ProductsListScreen({
   onScan,
   onLowStock,
   onCreate,
+  onCategories,
+  onImport,
 }: {
   onOpen: (id: number) => void;
   onScan: () => void;
   onLowStock: () => void;
   onCreate: () => void;
+  onCategories: () => void;
+  onImport: () => void;
 }) {
   const { t } = useTranslation();
   const lang = useLang();
@@ -121,6 +133,12 @@ export function ProductsListScreen({
           title={t('products.form.newProductButton')}
           onPress={onCreate}
         />
+        <Button
+          title={t('categories.open')}
+          kind="secondary"
+          onPress={onCategories}
+        />
+        <Button title={t('imports.open')} kind="secondary" onPress={onImport} />
         <View style={styles.tools}>
           <View style={styles.flex}>
             <Button
@@ -212,8 +230,8 @@ const styles = StyleSheet.create({
   header: { padding: spacing.lg, gap: spacing.sm },
   search: {
     minHeight: touch,
-    borderWidth: 1.5,
-    borderColor: colors.border,
+    backgroundColor: colors.card,
+    ...shadow.card,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     fontFamily: font.regular,
@@ -228,8 +246,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: spacing.md,
     borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: colors.border,
+    backgroundColor: colors.card,
+    ...shadow.card,
   },
   chipOn: { backgroundColor: colors.primary, borderColor: colors.primary },
   chipTextOn: { color: colors.primaryText },
@@ -237,9 +255,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     gap: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.lg,
+    ...cardStyle,
     padding: spacing.md,
     marginBottom: spacing.sm,
     minHeight: touch,

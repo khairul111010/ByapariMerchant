@@ -84,9 +84,9 @@ Suggested libraries (confirm each in the plan; flag anything needing custom nati
 2. Build milestone by milestone, testing on a real low-end Android or an emulator profile before calling anything done:
    - **A** (code complete; user reports it works on their phone — not individually confirmed: biometric lock, release-build Crashlytics) Foundation: project, theme, i18n, API client + error mapper, auth (login, signup, forgot-password, biometric unlock), `/me`, role-aware navigation, pending banner.
    - **B** ✅ (done; user confirmed a real push arrives. Not individually confirmed: tap-to-open in background/killed state, offline queue on device, invoice PDF content) Orders + push: list, detail, status, payments, courier, invoice, FCM + Notifee channel, deep links.
-   - **C** (~80%: products, variants, photos, stock, scan, product create/edit/delete done; categories, CSV import, AI description left. Detail and verification checklist: `docs/progress.md`) Catalogue + inventory: products, variants, images (on-device resize), categories, stock, scan, CSV import.
-   - **D** Selling: POS (+ printer), coupons, zones, landing pages, carts, reviews, customers.
-   - **E** Storefront + insights: banners, home sections, themes, dashboard.
+   - **C** (code complete incl. categories, CSV import, AI description; not ticked until the user verifies on device. Checklist: `docs/progress.md`) Catalogue + inventory: products, variants, images (on-device resize), categories, stock, scan, CSV import.
+   - **D** (code complete except the thermal printer, skipped for now; POS confirmed working; rest not yet verified — see `docs/progress.md`) Selling: POS (+ printer), coupons, zones, landing pages, carts, reviews, customers.
+   - **E** (code complete; dashboard and banners confirmed working, home sections and appearance not yet verified — see `docs/progress.md`) Storefront + insights: banners, home sections, themes, dashboard.
    - **F** Owner settings: store/payments/couriers/AI/marketing, domains, staff, plan; polish, performance, release.
 3. Ask the user before adding any paid SDK, changing the auth model, or anything that implies a backend change. Backend changes are made in the Laravel repo, not here.
 4. After each milestone, tick it in this file so progress survives across sessions. Keep `docs/progress.md` current: update its verification checklist whenever the user confirms (or fails) something on the phone.
