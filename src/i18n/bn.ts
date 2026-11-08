@@ -88,6 +88,7 @@ export const bn: Strings = {
     all: 'সব',
     empty: 'এখনো কোনো অর্ডার নেই। নতুন অর্ডার এখানে দেখা যাবে।',
     emptyFiltered: 'কোনো অর্ডার মেলেনি।',
+    emptyTitle: 'এখনো কোনো অর্ডার নেই',
     loadFailed: 'অর্ডার লোড করা যায়নি।',
     status: {
       pending: 'অপেক্ষমাণ',

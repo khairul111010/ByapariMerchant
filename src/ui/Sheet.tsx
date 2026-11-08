@@ -10,7 +10,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { colors, radius, shadow, spacing } from './theme';
+import { useStyles } from './ThemeProvider';
 import { Text } from './index';
 
 const SCREEN_H = Dimensions.get('window').height;
@@ -30,6 +30,7 @@ export function Sheet({
   title?: string;
   children: React.ReactNode;
 }) {
+  const styles = useSheetStyles();
   const [mounted, setMounted] = useState(visible);
   const slide = useRef(new Animated.Value(SCREEN_H)).current;
   const fade = useRef(new Animated.Value(0)).current;
@@ -140,38 +141,40 @@ export function Sheet({
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, justifyContent: 'flex-end' },
-  backdrop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: colors.overlay,
-  },
-  sheet: {
-    maxHeight: '88%',
-    backgroundColor: colors.card,
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
-    ...shadow.raised,
-  },
-  handleArea: {
-    alignItems: 'center',
-    paddingTop: spacing.md,
-    paddingBottom: spacing.sm,
-  },
-  handle: {
-    width: 44,
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: colors.border,
-  },
-  title: { paddingHorizontal: spacing.xl, paddingBottom: spacing.sm },
-  content: {
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.xxl,
-    gap: spacing.md,
-  },
-});
+function useSheetStyles() {
+  return useStyles(({ c, radius, spacing, shadow }) => ({
+    root: { flex: 1, justifyContent: 'flex-end' },
+    backdrop: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: c.overlay,
+    },
+    sheet: {
+      maxHeight: '88%',
+      backgroundColor: c.card,
+      borderTopLeftRadius: radius.xl,
+      borderTopRightRadius: radius.xl,
+      ...shadow.raised,
+    },
+    handleArea: {
+      alignItems: 'center',
+      paddingTop: spacing.md,
+      paddingBottom: spacing.sm,
+    },
+    handle: {
+      width: 44,
+      height: 5,
+      borderRadius: 3,
+      backgroundColor: c.border,
+    },
+    title: { paddingHorizontal: spacing.xl, paddingBottom: spacing.sm },
+    content: {
+      paddingHorizontal: spacing.xl,
+      paddingBottom: spacing.xxl,
+      gap: spacing.md,
+    },
+  }));
+}

@@ -8,4 +8,5 @@ export const KV_KEYS = {
   apiBaseUrl: 'session.apiBaseUrl',
   shopAddress: 'session.shopAddress',
   biometricLock: 'pref.biometricLock',
+  colorScheme: 'pref.colorScheme',
 } as const;

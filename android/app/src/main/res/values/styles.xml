@@ -8,7 +8,7 @@
         <item name="colorPrimary">@color/brand_red</item>
         <item name="colorAccent">@color/brand_red</item>
         <!-- Text cursor and selection handles in the brand colour. -->
-        <item name="android:textColorHighlight">#33ED1C24</item>
+        <item name="android:textColorHighlight">#330D9488</item>
         <item name="android:windowLightStatusBar">true</item>
     </style>
 

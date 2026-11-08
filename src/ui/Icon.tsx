@@ -1,6 +1,6 @@
 import React from 'react';
 import Svg, { Path } from 'react-native-svg';
-import { colors } from './theme';
+import { useTheme } from './ThemeProvider';
 
 /** Simple 24px line icons, drawn here so there is no icon font to ship. */
 const PATHS = {
@@ -17,6 +17,12 @@ const PATHS = {
   chevronLeft: ['M15 6l-6 6 6 6'],
   close: ['M6 6l12 12', 'M18 6 6 18'],
   check: ['M5 12.5l4.5 4.5L19 7.5'],
+  search: ['M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z', 'm20 20-4-4'],
+  inbox: [
+    'M3 13h5l1.5 3h5L16 13h5',
+    'M5 5h14l2 8v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-6l2-8Z',
+  ],
+  plus: ['M12 5v14', 'M5 12h14'],
 } as const;
 
 export type IconName = keyof typeof PATHS;
@@ -24,7 +30,7 @@ export type IconName = keyof typeof PATHS;
 export function Icon({
   name,
   size = 24,
-  color = colors.text,
+  color,
   strokeWidth = 1.9,
 }: {
   name: IconName;
@@ -32,6 +38,8 @@ export function Icon({
   color?: string;
   strokeWidth?: number;
 }) {
+  const { c } = useTheme();
+  const ink = color ?? c.textPrimary;
   return (
     <Svg
       width={size}
@@ -45,7 +53,7 @@ export function Icon({
         <Path
           key={i}
           d={d}
-          stroke={color}
+          stroke={ink}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeLinejoin="round"

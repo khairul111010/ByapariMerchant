@@ -1,9 +1,9 @@
 import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
-import { colors, radius, shadow, spacing } from './theme';
-import { Text } from './index';
+import { Pressable, Text as RNText } from 'react-native';
+import { Badge, Tone } from './Badge';
+import { useStyles } from './ThemeProvider';
 
-/** A pill-shaped filter chip: filled brand colour when selected. */
+/** A pill filter chip: teal when selected, a quiet outlined pill otherwise. */
 export function Chip({
   label,
   selected,
@@ -13,31 +13,39 @@ export function Chip({
   selected: boolean;
   onPress: () => void;
 }) {
+  const s = useStyles(({ c, radius, spacing, font }) => ({
+    chip: {
+      minHeight: 40,
+      justifyContent: 'center',
+      paddingHorizontal: spacing.lg,
+      borderRadius: radius.pill,
+      backgroundColor: c.card,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    on: { backgroundColor: c.primaryFill, borderColor: c.primaryFill },
+    text: {
+      fontFamily: font.bold,
+      fontSize: 14,
+      lineHeight: 20,
+      color: c.textPrimary,
+    },
+    textOn: { color: c.textOnPrimary },
+  }));
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ selected }}
       onPress={onPress}
-      style={[styles.chip, selected && styles.chipOn]}
+      style={[s.chip, selected && s.on]}
     >
-      <Text variant="label" style={selected ? styles.textOn : undefined}>
-        {label}
-      </Text>
+      <RNText style={[s.text, selected && s.textOn]}>{label}</RNText>
     </Pressable>
   );
 }
 
-type Tone = 'neutral' | 'success' | 'warning' | 'danger' | 'brand';
-const TONES: Record<Tone, { bg: string; fg: string }> = {
-  neutral: { bg: colors.surface, fg: colors.text },
-  success: { bg: colors.successSoft, fg: colors.success },
-  warning: { bg: colors.warningBg, fg: colors.warningText },
-  danger: { bg: colors.dangerSoft, fg: colors.danger },
-  brand: { bg: colors.primarySoft, fg: colors.primary },
-};
-
-/** A small status badge. Colour is never the only signal: the text always says what it is. */
+/** Older name for a soft badge, kept for existing screens. */
 export function Pill({
   label,
   tone = 'neutral',
@@ -45,33 +53,5 @@ export function Pill({
   label: string;
   tone?: Tone;
 }) {
-  return (
-    <View style={[styles.pill, { backgroundColor: TONES[tone].bg }]}>
-      <Text
-        variant="caption"
-        style={{ color: TONES[tone].fg, fontFamily: 'NotoSansBengali-Bold' }}
-      >
-        {label}
-      </Text>
-    </View>
-  );
+  return <Badge label={label} tone={tone} />;
 }
-
-const styles = StyleSheet.create({
-  chip: {
-    minHeight: 42,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-    borderRadius: radius.pill,
-    backgroundColor: colors.card,
-    ...shadow.card,
-  },
-  chipOn: { backgroundColor: colors.primary },
-  textOn: { color: colors.primaryText },
-  pill: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: spacing.md,
-    paddingVertical: 3,
-    borderRadius: radius.pill,
-  },
-});

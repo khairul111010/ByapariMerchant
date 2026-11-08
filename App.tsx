@@ -21,6 +21,7 @@ import { usePush } from './src/features/push/usePush';
 import { useLock } from './src/store/lock';
 import { useSession } from './src/store/session';
 import { colors } from './src/ui/theme';
+import { ThemeProvider } from './src/ui/ThemeProvider';
 
 initTelemetry();
 
@@ -89,17 +90,19 @@ function Root() {
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <StatusBar barStyle="dark-content" />
-      <PersistQueryClientProvider
-        client={queryClient}
-        persistOptions={{ persister }}
-      >
-        <SafeAreaView style={styles.root}>
-          <Root />
-        </SafeAreaView>
-      </PersistQueryClientProvider>
-    </SafeAreaProvider>
+    <ThemeProvider>
+      <SafeAreaProvider>
+        <StatusBar barStyle="dark-content" />
+        <PersistQueryClientProvider
+          client={queryClient}
+          persistOptions={{ persister }}
+        >
+          <SafeAreaView style={styles.root}>
+            <Root />
+          </SafeAreaView>
+        </PersistQueryClientProvider>
+      </SafeAreaProvider>
+    </ThemeProvider>
   );
 }
 

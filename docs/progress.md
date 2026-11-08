@@ -75,13 +75,14 @@ Legend: ✅ confirmed by the user on a real phone · 🧪 covered by automated t
 - ⬜ Marketing: pixel/analytics ids, Conversions API token (write-only), a pasted Search Console tag is reduced to its code
 - ⬜ A staff login does NOT see "Shop settings" in More (owner only)
 
-### Design system (2026-11-05)
-- Brand from `assets/logo/byapari-logo.svg`: red `#ED1C24` (logo), buttons `#D8161E` (white text 5.2:1), text `#1A1A1A`, background `#F7F5F0`. Tokens in `src/ui/theme.ts`; shared kit in `src/ui/` (Button, Field, Choice, Skeleton, Sheet, Chip/Pill, Icon, Brand logo, TabBar, DateField).
-- App icon: adaptive (red background + cream symbol), rendered from the SVG with resvg (scratch tooling, not a project dependency). App name "Byapari" / "ব্যাপারি".
-- Cards are soft white shadows instead of borders; 22 screens converted by script.
-- ⬜ User to review on the phone: logo on auth screens, floating tab bar, More screen, dashboard hero card, order badges, bottom sheets (language, sign-out, date picker, order status).
-- ⬜ Still inline (candidates for bottom sheets): the "Are you sure?" confirmations for deleting products, variants, categories, coupons, banners, sections, landing pages, reviews, carts, staff, and the SecretField clear.
-- Not done: haptics, shared-element transitions, a Latin display font (kept Noto Sans Bengali so old Android phones render Bangla).
+### Design system (replaced 2026-11-08: clean SaaS, teal)
+- Tokens in `src/ui/theme.ts`: light + dark palettes (slate neutrals, teal `#0D9488` accent), spacing 4/8/12/16/20/24/32, radius 14 (buttons, inputs) / 18 (cards) / 24 (sheets), type scale incl. a large `metric` size, soft shadows + thin borders.
+- **Contrast rule:** `#0D9488` is only 3.7:1 on white, so it is the accent (rings, icons, bars, selection); filled buttons and teal text use `primaryFill #0F766E` (5.5:1). Status colours: bright hue for dots/bars, a deeper shade for badge text. `__tests__/theme.test.ts` asserts every text pair in both palettes is ≥ 4.5:1.
+- `src/ui/ThemeProvider.tsx`: `useTheme()`, `useStyles()`, preference system/light/dark saved in MMKV. **Dark mode is built into every kit component but switched off app-wide (`DARK_MODE_ENABLED = false`)** because most screens still use the static light `colors`; only the orders list is fully migrated. Flip it once screens move to `useStyles`.
+- Kit: Text, Button (primary / secondary / outline / ghost, md/sm, icon), TextField (`Field`), Choice, Skeleton / SkeletonText / SkeletonCard, Card, Badge + StatusBadge, OrderCard, EmptyState, SectionHeader, Chip, Sheet, DateField, TabBar, Icon. Shared press-scale animation. 17 component tests.
+- Logo and launcher icon are still the red logo mark; the UI accent is teal.
+- ⬜ User to review on the phone (needs a native rebuild for the cursor/background colour; the rest is JS).
+- ⬜ Screens still on static light tokens: everything except the orders list. Migrate to `useStyles` before enabling dark mode.
 
 ## Known gaps and open questions
 - **No way to change a password in the app.** A phone-only owner who gets an operator's temporary password (12 random characters) is signed out and can only sign in with it; there is no change-password, change-email or add-phone screen in the backend or the app yet. Needs a backend endpoint first.
@@ -110,7 +111,7 @@ Legend: ✅ confirmed by the user on a real phone · 🧪 covered by automated t
 - `react-native-fast-image` not used yet; the product list uses React Native's `Image`. Check New Architecture support before swapping it in.
 
 ## Tests
-340 unit tests, 38 suites (API client, error mapper, offline queue, formatters, schemas against real samples, rich text, forms, push payload, upload). No component tests or Maestro E2E yet (CLAUDE.md asks for both).
+384 unit tests, 40 suites (API client, error mapper, offline queue, formatters, schemas against real samples, rich text, forms, push payload, upload). No component tests or Maestro E2E yet (CLAUDE.md asks for both).
 
 ## CI readiness (CLAUDE.md: lint, typecheck, test, signed release build)
 - `npm run lint`: 0 errors, 26 style warnings (`void promise` inside arrow functions). `npm run typecheck` clean. `npm test` 174 tests.

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { formatNumber, Lang, MONTHS } from '../i18n/format';
 import { useLang } from '../i18n';
@@ -13,7 +13,8 @@ import {
 import { Icon } from './Icon';
 import { Sheet } from './Sheet';
 import { Button, Text } from './index';
-import { colors, radius, shadow, spacing, touch } from './theme';
+import { touch } from './theme';
+import { useStyles, useTheme } from './ThemeProvider';
 
 const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
 
@@ -42,6 +43,8 @@ export function DateField({
   onChange: (iso: string) => void;
   error?: string;
 }) {
+  const styles = useDateStyles();
+  const { c } = useTheme();
   const { t } = useTranslation();
   const lang = useLang();
   const [open, setOpen] = useState(false);
@@ -80,7 +83,7 @@ export function DateField({
         >
           {selected ? label(value, lang) : t('calendar.choose')}
         </Text>
-        <Icon name="chevronRight" size={20} color={colors.textMuted} />
+        <Icon name="chevronRight" size={20} color={c.textSecondary} />
       </Pressable>
       {error ? <Text variant="error">{error}</Text> : null}
 
@@ -165,46 +168,48 @@ export function DateField({
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: { gap: spacing.xs },
-  fieldLabel: { color: colors.textMuted, fontSize: 13 },
-  field: {
-    minHeight: 54,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1.5,
-    borderColor: 'transparent',
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.lg,
-    backgroundColor: colors.card,
-    ...shadow.card,
-  },
-  fieldError: { borderColor: colors.danger },
-  fieldText: { fontSize: 16 },
-  placeholder: { color: colors.textMuted },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  nav: {
-    minWidth: touch,
-    minHeight: touch,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  week: { flexDirection: 'row' },
-  weekday: { flex: 1, textAlign: 'center' },
-  cell: { flex: 1, height: touch },
-  day: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.pill,
-  },
-  today: { borderWidth: 1.5, borderColor: colors.primary },
-  selected: { backgroundColor: colors.primary },
-  selectedText: { color: colors.primaryText },
-  actions: { flexDirection: 'row', gap: spacing.sm },
-  flex: { flex: 1 },
-});
+function useDateStyles() {
+  return useStyles(({ c, radius, spacing, shadow }) => ({
+    wrap: { gap: spacing.xs },
+    fieldLabel: { color: c.textSecondary, fontSize: 13 },
+    field: {
+      minHeight: 54,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      borderWidth: 1.5,
+      borderColor: 'transparent',
+      borderRadius: radius.md,
+      paddingHorizontal: spacing.lg,
+      backgroundColor: c.card,
+      ...shadow.card,
+    },
+    fieldError: { borderColor: c.dangerText },
+    fieldText: { fontSize: 16 },
+    placeholder: { color: c.textSecondary },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    nav: {
+      minWidth: touch,
+      minHeight: touch,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    week: { flexDirection: 'row' },
+    weekday: { flex: 1, textAlign: 'center' },
+    cell: { flex: 1, height: touch },
+    day: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: radius.pill,
+    },
+    today: { borderWidth: 1.5, borderColor: c.primaryFill },
+    selected: { backgroundColor: c.primaryFill },
+    selectedText: { color: c.textOnPrimary },
+    actions: { flexDirection: 'row', gap: spacing.sm },
+    flex: { flex: 1 },
+  }));
+}

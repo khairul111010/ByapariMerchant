@@ -8,6 +8,7 @@ import { useLang } from '../../i18n';
 import { PendingBanner } from '../shell/PendingBanner';
 import { Button, Skeleton, Text } from '../../ui';
 import { DateField } from '../../ui/DateField';
+import { SectionHeader } from '../../ui/SectionHeader';
 import { colors, radius, spacing, cardStyle, shadow } from '../../ui/theme';
 import { DashboardRange } from './api';
 import { useDashboard } from './hooks';
@@ -43,7 +44,7 @@ function Kpi({
       <Text variant="muted" style={ink}>
         {label}
       </Text>
-      <Text variant={hero ? 'display' : 'title'} style={ink}>
+      <Text variant={hero ? 'metric' : 'display'} style={ink}>
         {value}
       </Text>
       {delta ? (
@@ -280,13 +281,13 @@ export function DashboardScreen() {
             />
           </View>
 
-          <Text variant="label">{t('dashboard.dailyRevenue')}</Text>
+          <SectionHeader title={t('dashboard.dailyRevenue')} />
           <DailyBars data={d} />
 
-          <Text variant="label">{t('dashboard.funnel')}</Text>
+          <SectionHeader title={t('dashboard.funnel')} />
           <Funnel data={d} />
 
-          <Text variant="label">{t('dashboard.byStatus')}</Text>
+          <SectionHeader title={t('dashboard.byStatus')} />
           <View style={styles.block}>
             {Object.entries(d.orders_by_status).map(([status, count]) => (
               <View key={status} style={styles.line}>
@@ -300,7 +301,7 @@ export function DashboardScreen() {
 
           {d.top_products.length > 0 ? (
             <>
-              <Text variant="label">{t('dashboard.topProducts')}</Text>
+              <SectionHeader title={t('dashboard.topProducts')} />
               <View style={styles.block}>
                 {d.top_products.map(p => (
                   <View key={p.product_id} style={styles.line}>
@@ -319,7 +320,7 @@ export function DashboardScreen() {
 
           {d.recent_orders.length > 0 ? (
             <>
-              <Text variant="label">{t('dashboard.recent')}</Text>
+              <SectionHeader title={t('dashboard.recent')} />
               <View style={styles.block}>
                 {d.recent_orders.map(o => (
                   <View key={o.id} style={styles.line}>
@@ -335,7 +336,7 @@ export function DashboardScreen() {
 
           {d.checklist.some(c => !c.done) ? (
             <>
-              <Text variant="label">{t('dashboard.firstSteps')}</Text>
+              <SectionHeader title={t('dashboard.firstSteps')} />
               <View style={styles.block}>
                 {d.checklist.map(c => (
                   <Text

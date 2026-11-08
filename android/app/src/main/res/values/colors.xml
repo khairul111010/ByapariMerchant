@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="brand_red">#ED1C24</color>
-    <color name="app_background">#F7F5F0</color>
+    <!-- Accent for native bits (cursor, selection handles, overscroll): the brand teal. -->
+    <color name="brand_red">#0D9488</color>
+    <color name="app_background">#F8FAFC</color>
 </resources>

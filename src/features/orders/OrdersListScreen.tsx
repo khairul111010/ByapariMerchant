@@ -1,11 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  View,
-} from 'react-native';
+import { ScrollView, TextInput, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useTranslation } from 'react-i18next';
 import { errorMessage } from '../../api/errorMessage';
@@ -14,39 +8,19 @@ import {
   OrderRow,
   OrderStatus,
 } from '../../api/schemas/orders';
-import { formatDateTime, formatMoney } from '../../i18n/format';
-import { useLang } from '../../i18n';
-import { Pill } from '../../ui/Chips';
 import { PendingBanner } from '../shell/PendingBanner';
-import { Button, Skeleton, Text } from '../../ui';
-import {
-  colors,
-  font,
-  radius,
-  spacing,
-  touch,
-  cardStyle,
-  shadow,
-} from '../../ui/theme';
+import { Button, SkeletonCard, Text } from '../../ui';
+import { Chip } from '../../ui/Chips';
+import { EmptyState } from '../../ui/EmptyState';
+import { Icon } from '../../ui/Icon';
+import { OrderCard } from '../../ui/OrderCard';
+import { useStyles, useTheme } from '../../ui/ThemeProvider';
 import { useOrders } from './hooks';
 
-type Tone = 'neutral' | 'success' | 'warning' | 'danger' | 'brand';
-const STATUS_TONE: Record<OrderStatus, Tone> = {
-  pending: 'warning',
-  confirmed: 'brand',
-  shipped: 'brand',
-  delivered: 'success',
-  cancelled: 'danger',
-};
-const PAYMENT_TONE: Record<OrderRow['payment_status'], Tone> = {
-  unpaid: 'warning',
-  paid: 'success',
-  failed: 'danger',
-};
-
+/** Fully on the theme: the pattern for moving the other screens to dark-mode-ready styles. */
 export function OrdersListScreen({ onOpen }: { onOpen: (id: number) => void }) {
   const { t } = useTranslation();
-  const lang = useLang();
+  const { c } = useTheme();
   const [status, setStatus] = useState<OrderStatus | undefined>();
   const [q, setQ] = useState('');
   const query = q.trim() || undefined;
@@ -55,79 +29,87 @@ export function OrdersListScreen({ onOpen }: { onOpen: (id: number) => void }) {
     () => orders.data?.pages.flatMap(p => p.data) ?? [],
     [orders.data],
   );
+  const s = useStyles(({ c: p, radius, spacing, font, type }) => ({
+    screen: { flex: 1, backgroundColor: p.background },
+    header: {
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.lg,
+      paddingBottom: spacing.sm,
+      gap: spacing.md,
+    },
+    search: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      minHeight: 48,
+      paddingHorizontal: spacing.md,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: p.border,
+      backgroundColor: p.card,
+    },
+    searchInput: {
+      flex: 1,
+      fontFamily: font.regular,
+      ...type.body,
+      color: p.textPrimary,
+      paddingVertical: spacing.sm,
+    },
+    chips: { gap: spacing.sm, paddingRight: spacing.lg },
+    list: {
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.xs,
+      paddingBottom: spacing.xxl,
+    },
+    center: { padding: spacing.xxl, gap: spacing.md },
+  }));
 
   const renderRow = ({ item }: { item: OrderRow }) => (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`${item.order_number}, ${item.customer_name}`}
-      onPress={() => onOpen(item.id)}
-      style={styles.row}
-    >
-      <View style={styles.rowTop}>
-        <Text variant="label">{item.order_number}</Text>
-        <Text variant="label">{formatMoney(item.total, lang)}</Text>
-      </View>
-      <Text>{item.customer_name}</Text>
-      <View style={styles.pills}>
-        <Pill
-          label={t(`orders.status.${item.status}`)}
-          tone={STATUS_TONE[item.status]}
-        />
-        <Pill
-          label={t(`orders.paymentStatus.${item.payment_status}`)}
-          tone={PAYMENT_TONE[item.payment_status]}
-        />
-        <Pill label={t(`orders.payment.${item.payment_method}`)} />
-      </View>
-      <Text variant="caption">{formatDateTime(item.created_at, lang)}</Text>
-    </Pressable>
+    <OrderCard order={item} onPress={() => onOpen(item.id)} />
   );
+  const filtered = Boolean(status || query);
 
   return (
-    <View style={styles.screen}>
+    <View style={s.screen}>
       <PendingBanner />
-      <View style={styles.header}>
+      <View style={s.header}>
         <Text variant="title">{t('orders.title')}</Text>
-        <TextInput
-          value={q}
-          onChangeText={setQ}
-          placeholder={t('orders.search')}
-          placeholderTextColor={colors.textMuted}
-          accessibilityLabel={t('orders.search')}
-          style={styles.search}
-        />
+        <View style={s.search}>
+          <Icon name="search" size={20} color={c.textSecondary} />
+          <TextInput
+            value={q}
+            onChangeText={setQ}
+            placeholder={t('orders.search')}
+            placeholderTextColor={c.textSecondary}
+            selectionColor={c.primary}
+            accessibilityLabel={t('orders.search')}
+            style={s.searchInput}
+          />
+        </View>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.chips}
+          contentContainerStyle={s.chips}
         >
-          {[undefined, ...ORDER_STATUSES].map(s => (
-            <Pressable
-              key={s ?? 'all'}
-              accessibilityRole="button"
-              accessibilityState={{ selected: status === s }}
-              onPress={() => setStatus(s)}
-              style={[styles.chip, status === s && styles.chipOn]}
-            >
-              <Text
-                variant="label"
-                style={status === s ? styles.chipTextOn : undefined}
-              >
-                {s ? t(`orders.status.${s}`) : t('orders.all')}
-              </Text>
-            </Pressable>
+          {[undefined, ...ORDER_STATUSES].map(st => (
+            <Chip
+              key={st ?? 'all'}
+              label={st ? t(`orders.status.${st}`) : t('orders.all')}
+              selected={status === st}
+              onPress={() => setStatus(st)}
+            />
           ))}
         </ScrollView>
       </View>
 
       {orders.isPending ? (
-        <View style={styles.list}>
+        <View style={s.list}>
           {[0, 1, 2, 3].map(i => (
-            <Skeleton key={i} height={96} />
+            <SkeletonCard key={i} />
           ))}
         </View>
       ) : orders.isError && rows.length === 0 ? (
-        <View style={styles.center}>
+        <View style={s.center}>
           <Text variant="error">{errorMessage(orders.error, t)}</Text>
           <Button
             title={t('common.retry')}
@@ -139,60 +121,22 @@ export function OrdersListScreen({ onOpen }: { onOpen: (id: number) => void }) {
           data={rows}
           renderItem={renderRow}
           keyExtractor={o => String(o.id)}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={s.list}
           onEndReached={() => orders.hasNextPage && void orders.fetchNextPage()}
           onEndReachedThreshold={0.5}
           refreshing={orders.isRefetching && !orders.isFetchingNextPage}
           onRefresh={() => void orders.refetch()}
           ListEmptyComponent={
-            <Text variant="muted" style={styles.empty}>
-              {status || query ? t('orders.emptyFiltered') : t('orders.empty')}
-            </Text>
+            <EmptyState
+              icon={filtered ? 'search' : 'inbox'}
+              title={
+                filtered ? t('orders.emptyFiltered') : t('orders.emptyTitle')
+              }
+              message={filtered ? undefined : t('orders.empty')}
+            />
           }
         />
       )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bg },
-  header: { padding: spacing.lg, gap: spacing.sm },
-  search: {
-    minHeight: touch,
-    backgroundColor: colors.card,
-    ...shadow.card,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    fontFamily: font.regular,
-    fontSize: 15,
-    color: colors.text,
-  },
-  chips: { gap: spacing.sm },
-  chip: {
-    minHeight: 40,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.md,
-    borderRadius: 20,
-    backgroundColor: colors.card,
-    ...shadow.card,
-  },
-  chipOn: { backgroundColor: colors.primary, borderColor: colors.primary },
-  chipTextOn: { color: colors.primaryText },
-  list: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xl,
-    gap: spacing.sm,
-  },
-  row: {
-    ...cardStyle,
-    padding: spacing.md,
-    marginBottom: spacing.sm,
-    minHeight: touch,
-    gap: 2,
-  },
-  pills: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
-  rowTop: { flexDirection: 'row', justifyContent: 'space-between' },
-  center: { padding: spacing.xl, gap: spacing.md },
-  empty: { textAlign: 'center', padding: spacing.xl },
-});

@@ -86,6 +86,7 @@ export const en = {
     all: 'All',
     empty: 'No orders yet. New orders will show up here.',
     emptyFiltered: 'No orders match.',
+    emptyTitle: 'No orders yet',
     loadFailed: 'Could not load orders.',
     status: {
       pending: 'Pending',

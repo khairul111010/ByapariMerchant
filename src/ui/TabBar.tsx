@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Pressable, StyleSheet, View } from 'react-native';
+import { Animated, Pressable, View } from 'react-native';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Icon, IconName } from './Icon';
-import { colors, radius, shadow, spacing } from './theme';
+import { useStyles, useTheme } from './ThemeProvider';
 import { Text } from './index';
 
 const ICONS: Record<string, IconName> = {
@@ -26,6 +26,8 @@ function Item({
   onPress: () => void;
   onLongPress: () => void;
 }) {
+  const styles = useTabStyles();
+  const { c } = useTheme();
   const grow = useRef(new Animated.Value(focused ? 1 : 0)).current;
   useEffect(() => {
     Animated.spring(grow, {
@@ -64,7 +66,7 @@ function Item({
         <Icon
           name={icon}
           size={24}
-          color={focused ? colors.primary : colors.textMuted}
+          color={focused ? c.primary : c.textSecondary}
         />
       </View>
       <Text
@@ -80,6 +82,7 @@ function Item({
 
 /** A floating rounded bar with a soft shadow: the app's main navigation. */
 export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  const styles = useTabStyles();
   return (
     <View style={styles.outer} pointerEvents="box-none">
       <View style={styles.bar}>
@@ -115,41 +118,43 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  outer: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
-    paddingTop: spacing.xs,
-    backgroundColor: colors.bg,
-  },
-  bar: {
-    flexDirection: 'row',
-    backgroundColor: colors.card,
-    borderRadius: radius.xl,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.xs,
-    ...shadow.raised,
-  },
-  item: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 2,
-    minHeight: 56,
-    justifyContent: 'center',
-  },
-  iconWrap: {
-    width: 56,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pill: {
-    position: 'absolute',
-    width: 56,
-    height: 32,
-    borderRadius: radius.pill,
-    backgroundColor: colors.primarySoft,
-  },
-  label: { color: colors.textMuted },
-  labelOn: { color: colors.primary, fontFamily: 'NotoSansBengali-Bold' },
-});
+function useTabStyles() {
+  return useStyles(({ c, radius, spacing, shadow }) => ({
+    outer: {
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.md,
+      paddingTop: spacing.xs,
+      backgroundColor: c.background,
+    },
+    bar: {
+      flexDirection: 'row',
+      backgroundColor: c.card,
+      borderRadius: radius.xl,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.xs,
+      ...shadow.raised,
+    },
+    item: {
+      flex: 1,
+      alignItems: 'center',
+      gap: 2,
+      minHeight: 56,
+      justifyContent: 'center',
+    },
+    iconWrap: {
+      width: 56,
+      height: 32,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    pill: {
+      position: 'absolute',
+      width: 56,
+      height: 32,
+      borderRadius: radius.pill,
+      backgroundColor: c.primarySoft,
+    },
+    label: { color: c.textSecondary },
+    labelOn: { color: c.primaryFill, fontFamily: 'NotoSansBengali-Bold' },
+  }));
+}
