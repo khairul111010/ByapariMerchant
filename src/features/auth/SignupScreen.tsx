@@ -11,6 +11,7 @@ import { storeApiBaseUrl } from '../../config';
 import { formatMoney, formatNumber } from '../../i18n/format';
 import { useLang } from '../../i18n';
 import { KV_KEYS, kv } from '../../storage/mmkv';
+import { useHardwareBack } from '../../ui/useHardwareBack';
 import { useSession } from '../../store/session';
 import { BrandLogo } from '../../ui/Brand';
 import { Button, Choice, Field, Text } from '../../ui';
@@ -32,6 +33,8 @@ export function SignupScreen({ onBackToLogin }: { onBackToLogin: () => void }) {
   const lang = useLang();
   const signIn = useSession(s => s.signIn);
   const [step, setStep] = useState(0);
+  // Phone back: previous step, then the login screen.
+  useHardwareBack(() => (step > 0 ? setStep(step - 1) : onBackToLogin()));
   const [formError, setFormError] = useState<string | null>(null);
   const [availability, setAvailability] = useState<Availability>('idle');
   const [availabilityMsg, setAvailabilityMsg] = useState<string | null>(null);

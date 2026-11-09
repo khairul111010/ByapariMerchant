@@ -42,6 +42,7 @@ import {
   useSaveLandingPage,
   useTestimonials,
 } from './hooks';
+import { ScreenHeader } from '../../ui/ScreenHeader';
 
 function ProductPicker({
   value,
@@ -172,8 +173,7 @@ function Editor({
       contentContainerStyle={styles.wrap}
       keyboardShouldPersistTaps="handled"
     >
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-      <Text variant="title">{page ? t('landing.edit') : t('landing.add')}</Text>
+      <ScreenHeader title={page ? t('landing.edit') : t('landing.add')} onBack={onBack} />
       <ProductPicker value={product} onPick={setProduct} />
       {productError ? <Text variant="error">{productError}</Text> : null}
       {field('title', t('landing.pageTitle'))}
@@ -228,7 +228,7 @@ function Detail({
   if (page.isPending) {
     return (
       <View style={styles.wrap}>
-        <Button title={t('common.back')} kind="secondary" onPress={onBack} />
+        <ScreenHeader onBack={onBack} />
         <Skeleton height={120} />
       </View>
     );
@@ -236,7 +236,7 @@ function Detail({
   if (page.isError) {
     return (
       <View style={styles.wrap}>
-        <Button title={t('common.back')} kind="secondary" onPress={onBack} />
+        <ScreenHeader onBack={onBack} />
         <Text variant="error">{errorMessage(page.error, t)}</Text>
         <Button title={t('common.retry')} onPress={() => void page.refetch()} />
       </View>
@@ -262,8 +262,7 @@ function Detail({
       contentContainerStyle={styles.wrap}
       keyboardShouldPersistTaps="handled"
     >
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-      <Text variant="title">{p.title}</Text>
+      <ScreenHeader title={p.title} onBack={onBack} />
       <Text variant="muted">
         {p.is_active ? t('landing.live') : t('landing.off')} ·{' '}
         {p.product?.name ?? ''}
@@ -457,8 +456,7 @@ export function LandingScreen({ onBack }: { onBack: () => void }) {
   }
   return (
     <ScrollView contentContainerStyle={styles.wrap}>
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-      <Text variant="title">{t('landing.title')}</Text>
+      <ScreenHeader title={t('landing.title')} onBack={onBack} />
       <Button
         title={t('landing.add')}
         onPress={() => setView({ name: 'create' })}

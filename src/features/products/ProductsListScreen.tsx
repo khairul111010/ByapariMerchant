@@ -18,6 +18,8 @@ import {
 import { formatMoney, formatNumber } from '../../i18n/format';
 import { useLang } from '../../i18n';
 import { useSession } from '../../store/session';
+import { Chip } from '../../ui/Chips';
+import { Icon } from '../../ui/Icon';
 import { PendingBanner } from '../shell/PendingBanner';
 import { Button, Skeleton, Text } from '../../ui';
 import {
@@ -128,62 +130,75 @@ export function ProductsListScreen({
     <View style={styles.screen}>
       <PendingBanner />
       <View style={styles.header}>
-        <Text variant="title">{t('products.title')}</Text>
-        <Button
-          title={t('products.form.newProductButton')}
-          onPress={onCreate}
-        />
-        <Button
-          title={t('categories.open')}
-          kind="secondary"
-          onPress={onCategories}
-        />
-        <Button title={t('imports.open')} kind="secondary" onPress={onImport} />
-        <View style={styles.tools}>
-          <View style={styles.flex}>
-            <Button
-              title={t('inventory.scan')}
-              kind="secondary"
-              onPress={onScan}
-            />
-          </View>
-          <View style={styles.flex}>
-            <Button
-              title={t('inventory.lowTitle')}
-              kind="secondary"
-              onPress={onLowStock}
-            />
-          </View>
+        <View style={styles.titleRow}>
+          <Text variant="title" style={styles.flex}>
+            {t('products.title')}
+          </Text>
+          <Button
+            title={t('products.form.newProductButton')}
+            size="sm"
+            icon="plus"
+            onPress={onCreate}
+          />
         </View>
-        <TextInput
-          value={q}
-          onChangeText={setQ}
-          placeholder={t('products.search')}
-          placeholderTextColor={colors.textMuted}
-          accessibilityLabel={t('products.search')}
-          style={styles.search}
-        />
+        <View style={styles.searchPill}>
+          <Icon name="search" size={20} color={colors.textMuted} />
+          <TextInput
+            value={q}
+            onChangeText={setQ}
+            placeholder={t('products.search')}
+            placeholderTextColor={colors.textMuted}
+            selectionColor={colors.primary}
+            accessibilityLabel={t('products.search')}
+            style={styles.searchInput}
+          />
+          {/* Scan sits inside the search: a barcode is just a faster way to type the SKU. */}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('inventory.scan')}
+            onPress={onScan}
+            style={styles.scanButton}
+          >
+            <Icon name="scan" size={20} color={colors.primaryText} />
+          </Pressable>
+        </View>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.chips}
         >
           {chips.map(c => (
-            <Pressable
+            <Chip
               key={c.key}
-              accessibilityRole="button"
-              accessibilityState={{ selected: chip.key === c.key }}
+              label={c.label}
+              selected={chip.key === c.key}
               onPress={() => setChip(c)}
-              style={[styles.chip, chip.key === c.key && styles.chipOn]}
-            >
-              <Text
-                variant="label"
-                style={chip.key === c.key ? styles.chipTextOn : undefined}
-              >
-                {c.label}
-              </Text>
-            </Pressable>
+            />
           ))}
+        </ScrollView>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chips}
+        >
+          <Button
+            title={t('categories.open')}
+            kind="ghost"
+            size="sm"
+            onPress={onCategories}
+          />
+          <Button
+            title={t('inventory.lowTitle')}
+            kind="ghost"
+            size="sm"
+            onPress={onLowStock}
+          />
+          <Button
+            title={t('imports.open')}
+            kind="ghost"
+            size="sm"
+            onPress={onImport}
+          />
         </ScrollView>
       </View>
       {products.isPending ? (
@@ -226,6 +241,34 @@ export function ProductsListScreen({
 }
 
 const styles = StyleSheet.create({
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  searchPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    minHeight: 52,
+    paddingLeft: spacing.md,
+    paddingRight: 6,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.card,
+  },
+  searchInput: {
+    flex: 1,
+    fontFamily: font.regular,
+    fontSize: 15,
+    color: colors.text,
+    paddingVertical: spacing.sm,
+  },
+  scanButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   screen: { flex: 1, backgroundColor: colors.bg },
   header: { padding: spacing.lg, gap: spacing.sm },
   search: {

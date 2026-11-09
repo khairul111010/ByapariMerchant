@@ -8,6 +8,7 @@ import { ApiError } from '../../api/errors';
 import { Button, Text } from '../../ui';
 import { colors, spacing } from '../../ui/theme';
 import { lookupSku } from './api';
+import { useHardwareBack } from '../../ui/useHardwareBack';
 
 /** A scan is just an exact SKU lookup (there is no barcode column). Opens the product on a hit. */
 export function ScanScreen({
@@ -17,6 +18,7 @@ export function ScanScreen({
   onClose: () => void;
   onFound: (productId: number) => void;
 }) {
+  useHardwareBack(onClose);
   const { t } = useTranslation();
   const { hasPermission, canRequestPermission, requestPermission } =
     useCameraPermission();

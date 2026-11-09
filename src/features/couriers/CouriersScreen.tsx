@@ -11,6 +11,7 @@ import { SecretField } from '../settings/SecretField';
 import { clearPatch, isEmptyPatch } from '../settings/patch';
 import { useCouriers, useSaveCouriers } from './hooks';
 import { courierPatch } from './patch';
+import { ScreenHeader } from '../../ui/ScreenHeader';
 
 const fieldLabel = (t: TFunction, key: string) =>
   t(`couriers.field.${key}`, { defaultValue: key });
@@ -142,8 +143,7 @@ export function CouriersScreen({
       contentContainerStyle={styles.wrap}
       keyboardShouldPersistTaps="handled"
     >
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-      <Text variant="title">{t('couriers.title')}</Text>
+      <ScreenHeader title={t('couriers.title')} onBack={onBack} />
       {couriers.isPending ? (
         <Skeleton height={120} />
       ) : couriers.isError ? (

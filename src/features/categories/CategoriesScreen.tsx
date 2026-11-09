@@ -9,6 +9,7 @@ import { Button, Skeleton, Text } from '../../ui';
 import { colors, spacing, cardStyle } from '../../ui/theme';
 import { useReorderCategories } from './hooks';
 import { flattenTree, moveSibling } from './tree';
+import { ScreenHeader } from '../../ui/ScreenHeader';
 
 export function CategoriesScreen({
   onBack,
@@ -35,8 +36,7 @@ export function CategoriesScreen({
 
   return (
     <ScrollView contentContainerStyle={styles.wrap}>
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-      <Text variant="title">{t('categories.title')}</Text>
+      <ScreenHeader title={t('categories.title')} onBack={onBack} />
       <Button title={t('categories.add')} onPress={onAdd} />
       {categories.isPending ? (
         <>

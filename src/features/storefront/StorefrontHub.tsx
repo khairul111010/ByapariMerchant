@@ -5,7 +5,8 @@ import { useRole } from '../../hooks/useRole';
 import { AppearanceScreen } from '../appearance/AppearanceScreen';
 import { BannersScreen } from '../banners/BannersScreen';
 import { SectionsScreen } from '../sections/SectionsScreen';
-import { Button, Text } from '../../ui';
+import { MenuGroup, MenuRow } from '../../ui/Menu';
+import { ScreenHeader } from '../../ui/ScreenHeader';
 import { colors, spacing } from '../../ui/theme';
 
 type View =
@@ -15,10 +16,16 @@ type View =
   | { name: 'appearance' };
 
 /** Everything that shapes the public shop. Appearance is owner only, so staff never see it. */
-export function StorefrontHub({ onBack }: { onBack: () => void }) {
+export function StorefrontHub({
+  onBack,
+  initial = 'hub',
+}: {
+  onBack: () => void;
+  initial?: View['name'];
+}) {
   const { t } = useTranslation();
   const { isOwner } = useRole();
-  const [view, setView] = useState<View>({ name: 'hub' });
+  const [view, setView] = useState<View>({ name: initial } as View);
   const hub = () => setView({ name: 'hub' });
 
   if (view.name === 'banners') {
@@ -31,29 +38,35 @@ export function StorefrontHub({ onBack }: { onBack: () => void }) {
     return <AppearanceScreen onBack={hub} />;
   }
   return (
-    <ScrollView contentContainerStyle={styles.wrap}>
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-      <Text variant="title">{t('storefront.title')}</Text>
-      <Button
-        title={t('banners.title')}
-        onPress={() => setView({ name: 'banners' })}
-      />
-      <Button
-        title={t('sections.title')}
-        kind="secondary"
-        onPress={() => setView({ name: 'sections' })}
-      />
-      {isOwner ? (
-        <Button
-          title={t('appearance.title')}
-          kind="secondary"
-          onPress={() => setView({ name: 'appearance' })}
+    <ScrollView style={styles.screen} contentContainerStyle={styles.wrap}>
+      <ScreenHeader title={t('storefront.title')} onBack={onBack} />
+      <MenuGroup>
+        <MenuRow
+          icon="image"
+          title={t('banners.title')}
+          hint={t('menu.hint.banners')}
+          onPress={() => setView({ name: 'banners' })}
         />
-      ) : null}
+        <MenuRow
+          icon="layout"
+          title={t('sections.title')}
+          hint={t('menu.hint.sections')}
+          onPress={() => setView({ name: 'sections' })}
+        />
+        {isOwner ? (
+          <MenuRow
+            icon="palette"
+            title={t('appearance.title')}
+            hint={t('menu.hint.appearance')}
+            onPress={() => setView({ name: 'appearance' })}
+          />
+        ) : null}
+      </MenuGroup>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { padding: spacing.lg, gap: spacing.md, backgroundColor: colors.bg },
+  screen: { flex: 1, backgroundColor: colors.bg },
+  wrap: { padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxxl },
 });

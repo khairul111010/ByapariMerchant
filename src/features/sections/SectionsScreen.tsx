@@ -43,6 +43,7 @@ import {
   SectionForm,
   toSectionPayload,
 } from './sectionForm';
+import { ScreenHeader } from '../../ui/ScreenHeader';
 
 const sourceLabel = (t: (k: string) => string, key: string) =>
   t(`sections.source_.${key}`);
@@ -132,10 +133,7 @@ function SectionFormView({
       contentContainerStyle={styles.wrap}
       keyboardShouldPersistTaps="handled"
     >
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-      <Text variant="title">
-        {section ? t('sections.edit') : t('sections.add')}
-      </Text>
+      <ScreenHeader title={section ? t('sections.edit') : t('sections.add')} onBack={onBack} />
       {text('title', t('sections.sectionTitle'))}
       {text('title_bn', t('sections.titleBn'))}
       {text('subtitle', t('sections.subtitle'))}
@@ -289,7 +287,7 @@ function SectionDetail({
   const preview = usePreview(id);
   const picks = usePickMutations(id);
   const back = (
-    <Button title={t('common.back')} kind="secondary" onPress={onBack} />
+    <ScreenHeader onBack={onBack} />
   );
 
   if (section.isPending) {
@@ -451,8 +449,7 @@ export function SectionsScreen({ onBack }: { onBack: () => void }) {
   const list = sections.data?.data ?? [];
   return (
     <ScrollView contentContainerStyle={styles.wrap}>
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-      <Text variant="title">{t('sections.title')}</Text>
+      <ScreenHeader title={t('sections.title')} onBack={onBack} />
       {sections.data ? (
         <Text variant="muted">
           {t('sections.note', {

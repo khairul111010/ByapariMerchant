@@ -7,8 +7,10 @@ import { BrandLogo } from '../../ui/Brand';
 import { Button, Field, Text } from '../../ui';
 import { spacing } from '../../ui/theme';
 import { forgotPassword } from './api';
+import { useHardwareBack } from '../../ui/useHardwareBack';
 
 export function ForgotPasswordScreen({ onBack }: { onBack: () => void }) {
+  useHardwareBack(onBack);
   const { t } = useTranslation();
   const [shop, setShop] = useState(kv.getString(KV_KEYS.shopAddress) ?? '');
   const [email, setEmail] = useState('');

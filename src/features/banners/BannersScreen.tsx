@@ -18,6 +18,7 @@ import {
   useSaveBanner,
 } from './hooks';
 import { isSafeBannerLink, moveId } from './logic';
+import { ScreenHeader } from '../../ui/ScreenHeader';
 
 function BannerForm({
   banner,
@@ -103,10 +104,7 @@ function BannerForm({
       contentContainerStyle={styles.wrap}
       keyboardShouldPersistTaps="handled"
     >
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-      <Text variant="title">
-        {banner ? t('banners.edit') : t('banners.add')}
-      </Text>
+      <ScreenHeader title={banner ? t('banners.edit') : t('banners.add')} onBack={onBack} />
       <Text variant="label">{t('banners.image')}</Text>
       {preview ? (
         <Image
@@ -224,8 +222,7 @@ export function BannersScreen({ onBack }: { onBack: () => void }) {
   }
   return (
     <ScrollView contentContainerStyle={styles.wrap}>
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-      <Text variant="title">{t('banners.title')}</Text>
+      <ScreenHeader title={t('banners.title')} onBack={onBack} />
       <Button title={t('banners.add')} onPress={() => setEditing('new')} />
       {banners.isPending ? (
         <Skeleton height={140} />

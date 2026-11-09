@@ -18,6 +18,7 @@ import {
   toCouponPayload,
 } from './couponForm';
 import { useCouponMutations, useCoupons } from './hooks';
+import { ScreenHeader } from '../../ui/ScreenHeader';
 
 function CouponFormView({
   coupon,
@@ -110,10 +111,7 @@ function CouponFormView({
       contentContainerStyle={styles.wrap}
       keyboardShouldPersistTaps="handled"
     >
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-      <Text variant="title">
-        {coupon ? t('coupons.edit') : t('coupons.add')}
-      </Text>
+      <ScreenHeader title={coupon ? t('coupons.edit') : t('coupons.add')} onBack={onBack} />
       {field('code', t('coupons.code'), { autoCapitalize: 'characters' })}
       <Text variant="label">{t('coupons.type')}</Text>
       <Controller
@@ -235,8 +233,7 @@ export function CouponsScreen({ onBack }: { onBack: () => void }) {
   }
   return (
     <ScrollView contentContainerStyle={styles.wrap}>
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-      <Text variant="title">{t('coupons.title')}</Text>
+      <ScreenHeader title={t('coupons.title')} onBack={onBack} />
       <Button title={t('coupons.add')} onPress={() => setEditing('new')} />
       {coupons.isPending ? (
         <Skeleton height={80} />

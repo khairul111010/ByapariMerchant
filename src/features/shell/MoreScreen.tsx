@@ -1,69 +1,88 @@
 import React, { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
+import {
+  ScrollView,
+  Switch,
+  Text as RNText,
+  View,
+} from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { setLanguage, useLang } from '../../i18n';
 import { useRole } from '../../hooks/useRole';
+import { SellScreenName, useJump } from '../../store/jump';
 import { useLock } from '../../store/lock';
 import { useSession } from '../../store/session';
-import { BrandMark } from '../../ui/Brand';
-import { Pill } from '../../ui/Chips';
-import { Icon } from '../../ui/Icon';
+import { Badge } from '../../ui/Badge';
+import { IconName } from '../../ui/Icon';
+import { MenuGroup, MenuRow } from '../../ui/Menu';
 import { Sheet } from '../../ui/Sheet';
 import { Button, Choice, Text } from '../../ui';
-import { cardStyle, colors, spacing } from '../../ui/theme';
+import { useStyles, useTheme } from '../../ui/ThemeProvider';
 import { logoutRequest } from '../auth/api';
 import { authenticate, isBiometricAvailable } from '../auth/biometric';
 import { useMe } from '../auth/useMe';
+import { initialOf } from '../home/logic';
 import { stopPush } from '../push/push';
+import { SellScreen } from '../sell/SellTab';
 import { SettingsHub } from '../settings/SettingsHub';
 import { StorefrontHub } from '../storefront/StorefrontHub';
 import { PendingBanner } from './PendingBanner';
 
-function Row({
-  title,
-  value,
-  onPress,
-  danger,
-  last,
-}: {
-  title: string;
-  value?: string;
-  onPress: () => void;
-  danger?: boolean;
-  last?: boolean;
-}) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={value ? `${title}: ${value}` : title}
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.row,
-        !last && styles.rowDivider,
-        pressed && styles.rowPressed,
-      ]}
-    >
-      <Text variant="label" style={[styles.rowTitle, danger && styles.danger]}>
-        {title}
-      </Text>
-      {value ? <Text variant="muted">{value}</Text> : null}
-      {!danger ? (
-        <Icon name="chevronRight" size={20} color={colors.textMuted} />
-      ) : null}
-    </Pressable>
-  );
+type View_ =
+  | 'menu'
+  | 'storefront'
+  | 'appearance'
+  | 'settings'
+  | 'payments'
+  | 'general'
+  | { sell: SellScreenName };
+
+function useMoreStyles() {
+  return useStyles(({ c, radius, spacing, shadow, font }) => ({
+    screen: { flex: 1, backgroundColor: c.background },
+    body: { padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxxl },
+    profile: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.lg,
+      padding: spacing.xl,
+      borderRadius: radius.xl,
+      backgroundColor: c.card,
+      borderWidth: 1,
+      borderColor: c.border,
+      ...shadow.card,
+    },
+    avatar: {
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: c.primarySoft,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    avatarText: {
+      fontFamily: font.bold,
+      fontSize: 24,
+      lineHeight: 32,
+      color: c.primaryFill,
+    },
+    profileText: { flex: 1, gap: 2 },
+  }));
 }
 
 export function MoreScreen() {
   const { t } = useTranslation();
   const lang = useLang();
+  const { c } = useTheme();
+  const s = useMoreStyles();
   const { isOwner } = useRole();
   const me = useMe();
-  const signOut = useSession(s => s.signOut);
-  const lockEnabled = useLock(s => s.enabled);
-  const setLockEnabled = useLock(s => s.setEnabled);
+  const signOut = useSession(st => st.signOut);
+  const lockEnabled = useLock(st => st.enabled);
+  const setLockEnabled = useLock(st => st.setEnabled);
+  const jump = useJump(st => st.target);
+  const clearJump = useJump(st => st.clear);
   const [bioAvailable, setBioAvailable] = useState<boolean | null>(null);
-  const [view, setView] = useState<'menu' | 'storefront' | 'settings'>('menu');
+  const [view, setView] = useState<View_>('menu');
   const [langSheet, setLangSheet] = useState(false);
   const [outSheet, setOutSheet] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -71,6 +90,14 @@ export function MoreScreen() {
   useEffect(() => {
     void isBiometricAvailable().then(setBioAvailable);
   }, []);
+
+  // A Home tile, the "+" sheet or the setup checklist asked for a screen in here.
+  useEffect(() => {
+    if (jump?.tab === 'More') {
+      setView(jump.screen);
+      clearJump();
+    }
+  }, [jump, clearJump]);
 
   const toggleLock = async () => {
     if (lockEnabled) {
@@ -89,76 +116,121 @@ export function MoreScreen() {
     await signOut();
   };
 
-  if (view === 'storefront') {
-    return <StorefrontHub onBack={() => setView('menu')} />;
+  const menu = () => setView('menu');
+  if (typeof view === 'object') {
+    return <SellScreen name={view.sell} onBack={menu} />;
   }
-  if (view === 'settings' && isOwner) {
-    return <SettingsHub onBack={() => setView('menu')} />;
+  if (view === 'storefront' || view === 'appearance') {
+    return (
+      <StorefrontHub
+        onBack={menu}
+        initial={view === 'appearance' && isOwner ? 'appearance' : 'hub'}
+      />
+    );
+  }
+  if (
+    (view === 'settings' || view === 'payments' || view === 'general') &&
+    isOwner
+  ) {
+    return (
+      <SettingsHub onBack={menu} initial={view === 'settings' ? 'hub' : view} />
+    );
   }
 
+  const sell: Array<{ name: SellScreenName; icon: IconName }> = [
+    { name: 'pos', icon: 'sell' },
+    { name: 'customers', icon: 'users' },
+    { name: 'coupons', icon: 'tag' },
+    { name: 'zones', icon: 'mapPin' },
+    { name: 'landing', icon: 'page' },
+    { name: 'carts', icon: 'cart' },
+    { name: 'reviews', icon: 'star' },
+  ];
+
   return (
-    <View style={styles.screen}>
+    <View style={s.screen}>
       <PendingBanner />
       <ScrollView
-        contentContainerStyle={styles.body}
+        contentContainerStyle={s.body}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.profile}>
-          <BrandMark size={56} />
-          <View style={styles.profileText}>
+        <View style={s.profile}>
+          <View style={s.avatar}>
+            <RNText style={s.avatarText}>
+              {initialOf(me.data?.store.name)}
+            </RNText>
+          </View>
+          <View style={s.profileText}>
             <Text variant="subtitle" numberOfLines={1}>
               {me.data?.store.name ?? ''}
             </Text>
             <Text variant="muted" numberOfLines={1}>
               {me.data?.user.name ?? ''}
             </Text>
-            <Pill
+            <Badge
               label={isOwner ? t('staff.owner') : t('staff.staff')}
               tone="brand"
             />
           </View>
         </View>
 
-        <View style={styles.group}>
-          <Row
+        <MenuGroup label={t('sell.title')}>
+          {sell.map(item => (
+            <MenuRow
+              key={item.name}
+              icon={item.icon}
+              title={t(`sell.${item.name}`)}
+              hint={t(`menu.hint.${item.name}`)}
+              onPress={() => setView({ sell: item.name })}
+            />
+          ))}
+        </MenuGroup>
+
+        <MenuGroup label={t('storefront.title')}>
+          <MenuRow
+            icon="store"
             title={t('storefront.open')}
+            hint={t('menu.hint.storefront')}
             onPress={() => setView('storefront')}
-            last={!isOwner}
           />
           {isOwner ? (
-            <Row
+            <MenuRow
+              icon="more"
               title={t('settings.open')}
+              hint={t('menu.hint.settings')}
               onPress={() => setView('settings')}
-              last
             />
           ) : null}
-        </View>
+        </MenuGroup>
 
-        <View style={styles.group}>
-          <Row
+        <MenuGroup label={t('more.account')}>
+          <MenuRow
+            icon="language"
             title={t('more.language')}
             value={lang === 'bn' ? 'বাংলা' : 'English'}
             onPress={() => setLangSheet(true)}
           />
-          <View style={[styles.row, styles.rowDivider]}>
-            <Text variant="label" style={styles.rowTitle}>
-              {t('lock.setting')}
-            </Text>
-            <Switch
-              accessibilityLabel={t('lock.setting')}
-              value={lockEnabled}
-              onValueChange={() => void toggleLock()}
-              disabled={bioAvailable === false && !lockEnabled}
-              trackColor={{ true: colors.primary }}
-            />
-          </View>
-          <Row
+          <MenuRow
+            icon="lock"
+            title={t('lock.setting')}
+            right={
+              <Switch
+                accessibilityLabel={t('lock.setting')}
+                value={lockEnabled}
+                onValueChange={() => void toggleLock()}
+                disabled={bioAvailable === false && !lockEnabled}
+                trackColor={{ true: c.primary, false: c.borderStrong }}
+                thumbColor={c.card}
+              />
+            }
+          />
+          <MenuRow
+            icon="logout"
             title={t('common.signOut')}
             onPress={() => setOutSheet(true)}
             danger
-            last
           />
-        </View>
+        </MenuGroup>
         {bioAvailable === false ? (
           <Text variant="muted">{t('lock.unavailable')}</Text>
         ) : null}
@@ -204,31 +276,3 @@ export function MoreScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bg },
-  body: { padding: spacing.lg, gap: spacing.lg },
-  profile: {
-    ...cardStyle,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.lg,
-    padding: spacing.xl,
-  },
-  profileText: { flex: 1, gap: 2 },
-  group: { ...cardStyle, padding: 0, gap: 0, overflow: 'hidden' },
-  row: {
-    minHeight: 60,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    paddingHorizontal: spacing.lg,
-  },
-  rowDivider: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
-  },
-  rowPressed: { backgroundColor: colors.surface },
-  rowTitle: { flex: 1, fontSize: 16 },
-  danger: { color: colors.danger },
-});

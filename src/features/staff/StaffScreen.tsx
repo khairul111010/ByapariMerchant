@@ -21,6 +21,7 @@ import {
   toEditStaffPayload,
   willSignOut,
 } from './staffForm';
+import { ScreenHeader } from '../../ui/ScreenHeader';
 
 /** A plan-limit refusal is a prompt to look at plans, not a form error. */
 function UpgradePrompt({ onUpgrade }: { onUpgrade: () => void }) {
@@ -121,8 +122,7 @@ function StaffForm({
       contentContainerStyle={styles.wrap}
       keyboardShouldPersistTaps="handled"
     >
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-      <Text variant="title">{member ? t('staff.edit') : t('staff.add')}</Text>
+      <ScreenHeader title={member ? t('staff.edit') : t('staff.add')} onBack={onBack} />
       {limit ? <UpgradePrompt onUpgrade={onUpgrade} /> : null}
       {text('name', t('staff.name'))}
       {text('email', t('login.email'), {
@@ -203,8 +203,7 @@ export function StaffScreen({
   const removeError = m.remove.error;
   return (
     <ScrollView contentContainerStyle={styles.wrap}>
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-      <Text variant="title">{t('staff.title')}</Text>
+      <ScreenHeader title={t('staff.title')} onBack={onBack} />
       {staff.isPending ? (
         <Skeleton height={90} />
       ) : staff.isError || !d ? (

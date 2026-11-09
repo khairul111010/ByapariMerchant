@@ -9,6 +9,7 @@ import { Button, Skeleton, Text } from '../../ui';
 import { colors, spacing, cardStyle, shadow } from '../../ui/theme';
 import { ReviewStatus } from './api';
 import { useDeleteReview, useModerateReview, useReviews } from './hooks';
+import { ScreenHeader } from '../../ui/ScreenHeader';
 
 export function ReviewsScreen({ onBack }: { onBack: () => void }) {
   const { t } = useTranslation();
@@ -27,8 +28,7 @@ export function ReviewsScreen({ onBack }: { onBack: () => void }) {
 
   return (
     <ScrollView contentContainerStyle={styles.wrap}>
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-      <Text variant="title">{t('reviews.title')}</Text>
+      <ScreenHeader title={t('reviews.title')} onBack={onBack} />
       <Text variant="muted">{t('reviews.note')}</Text>
       {first && !first.reviews_enabled ? (
         <Text variant="muted">{t('reviews.off')}</Text>

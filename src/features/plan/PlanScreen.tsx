@@ -8,6 +8,7 @@ import { colors, radius, spacing, cardStyle } from '../../ui/theme';
 import { errorMessage } from '../../api/errorMessage';
 import { usePlan } from './hooks';
 import { priceString, renewalState } from './logic';
+import { ScreenHeader } from '../../ui/ScreenHeader';
 
 const open = (url: string | null) =>
   url ? void Linking.openURL(url) : undefined;
@@ -20,8 +21,7 @@ export function PlanScreen({ onBack }: { onBack: () => void }) {
 
   return (
     <ScrollView contentContainerStyle={styles.wrap}>
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-      <Text variant="title">{t('plan.title')}</Text>
+      <ScreenHeader title={t('plan.title')} onBack={onBack} />
       {plan.isPending ? (
         <>
           <Skeleton height={100} />

@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRole } from '../../hooks/useRole';
-import { Button, Text } from '../../ui';
+import { Text } from '../../ui';
+import { MenuGroup, MenuRow } from '../../ui/Menu';
+import { ScreenHeader } from '../../ui/ScreenHeader';
 import { colors, spacing } from '../../ui/theme';
 import { CouriersScreen } from '../couriers/CouriersScreen';
 import { PlanScreen } from '../plan/PlanScreen';
@@ -25,17 +27,23 @@ type View =
   | 'plan';
 
 /** Owner-only. Staff never reach it (the entry is hidden), and a 403 is still handled on each screen. */
-export function SettingsHub({ onBack }: { onBack: () => void }) {
+export function SettingsHub({
+  onBack,
+  initial = 'hub',
+}: {
+  onBack: () => void;
+  initial?: View;
+}) {
   const { t } = useTranslation();
   const { isOwner } = useRole();
-  const [view, setView] = useState<View>('hub');
+  const [view, setView] = useState<View>(initial);
   const hub = () => setView('hub');
   const toPlan = () => setView('plan');
 
   if (!isOwner) {
     return (
-      <ScrollView contentContainerStyle={styles.wrap}>
-        <Button title={t('common.back')} kind="secondary" onPress={onBack} />
+      <ScrollView style={styles.screen} contentContainerStyle={styles.wrap}>
+        <ScreenHeader title={t('settings.title')} onBack={onBack} />
         <Text>{t('settings.ownerOnly')}</Text>
       </ScrollView>
     );
@@ -57,48 +65,62 @@ export function SettingsHub({ onBack }: { onBack: () => void }) {
       return <PlanScreen onBack={hub} />;
     default:
       return (
-        <ScrollView contentContainerStyle={styles.wrap}>
-          <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-          <Text variant="title">{t('settings.title')}</Text>
-          <Button
-            title={t('settings.general')}
-            onPress={() => setView('general')}
-          />
-          <Button
-            title={t('settings.payments')}
-            kind="secondary"
-            onPress={() => setView('payments')}
-          />
-          <Button
-            title={t('couriers.title')}
-            kind="secondary"
-            onPress={() => setView('couriers')}
-          />
-          <Button
-            title={t('settings.ai')}
-            kind="secondary"
-            onPress={() => setView('ai')}
-          />
-          <Button
-            title={t('settings.marketing')}
-            kind="secondary"
-            onPress={() => setView('marketing')}
-          />
-          <Button
-            title={t('staff.title')}
-            kind="secondary"
-            onPress={() => setView('staff')}
-          />
-          <Button
-            title={t('plan.title')}
-            kind="secondary"
-            onPress={() => setView('plan')}
-          />
+        <ScrollView style={styles.screen} contentContainerStyle={styles.wrap}>
+          <ScreenHeader title={t('settings.title')} onBack={onBack} />
+          <MenuGroup label={t('menu.groups.business')}>
+            <MenuRow
+              icon="store"
+              title={t('settings.general')}
+              hint={t('menu.hint.general')}
+              onPress={() => setView('general')}
+            />
+            <MenuRow
+              icon="card"
+              title={t('settings.payments')}
+              hint={t('menu.hint.payments')}
+              onPress={() => setView('payments')}
+            />
+            <MenuRow
+              icon="truck"
+              title={t('couriers.title')}
+              hint={t('menu.hint.couriers')}
+              onPress={() => setView('couriers')}
+            />
+          </MenuGroup>
+          <MenuGroup label={t('menu.groups.growth')}>
+            <MenuRow
+              icon="sparkle"
+              title={t('settings.ai')}
+              hint={t('menu.hint.ai')}
+              onPress={() => setView('ai')}
+            />
+            <MenuRow
+              icon="megaphone"
+              title={t('settings.marketing')}
+              hint={t('menu.hint.marketing')}
+              onPress={() => setView('marketing')}
+            />
+          </MenuGroup>
+          <MenuGroup label={t('menu.groups.account')}>
+            <MenuRow
+              icon="users"
+              title={t('staff.title')}
+              hint={t('menu.hint.staff')}
+              onPress={() => setView('staff')}
+            />
+            <MenuRow
+              icon="star"
+              title={t('plan.title')}
+              hint={t('menu.hint.plan')}
+              onPress={() => setView('plan')}
+            />
+          </MenuGroup>
         </ScrollView>
       );
   }
 }
 
 const styles = StyleSheet.create({
-  wrap: { padding: spacing.lg, gap: spacing.md, backgroundColor: colors.bg },
+  screen: { flex: 1, backgroundColor: colors.bg },
+  wrap: { padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxxl },
 });

@@ -16,6 +16,7 @@ import {
   toNewVariantPayload,
   toVariantUpdatePayload,
 } from './productForm';
+import { useHardwareBack } from '../../ui/useHardwareBack';
 
 type Mode = { kind: 'add' } | { kind: 'edit'; variant: Variant };
 
@@ -29,6 +30,7 @@ export function VariantEditor({
   mode: Mode;
   onClose: () => void;
 }) {
+  useHardwareBack(onClose);
   const { t } = useTranslation();
   const m = useVariantMutations(productId);
   const [formError, setFormError] = useState<string | null>(null);

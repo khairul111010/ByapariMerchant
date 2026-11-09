@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { errorMessage } from '../../api/errorMessage';
 import { Button, Skeleton, Text } from '../../ui';
 import { colors, spacing } from '../../ui/theme';
+import { ScreenHeader } from '../../ui/ScreenHeader';
 
 /** Shared frame for a settings group: back button, title, skeleton, error with retry. */
 export function SettingsPage<T>({
@@ -24,8 +25,7 @@ export function SettingsPage<T>({
       contentContainerStyle={styles.wrap}
       keyboardShouldPersistTaps="handled"
     >
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-      <Text variant="title">{title}</Text>
+      <ScreenHeader title={title} onBack={onBack} />
       {query.isPending ? (
         <>
           <Skeleton height={60} />

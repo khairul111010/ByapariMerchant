@@ -18,10 +18,16 @@ import { useStyles, useTheme } from '../../ui/ThemeProvider';
 import { useOrders } from './hooks';
 
 /** Fully on the theme: the pattern for moving the other screens to dark-mode-ready styles. */
-export function OrdersListScreen({ onOpen }: { onOpen: (id: number) => void }) {
+export function OrdersListScreen({
+  onOpen,
+  initialStatus,
+}: {
+  onOpen: (id: number) => void;
+  initialStatus?: OrderStatus;
+}) {
   const { t } = useTranslation();
   const { c } = useTheme();
-  const [status, setStatus] = useState<OrderStatus | undefined>();
+  const [status, setStatus] = useState<OrderStatus | undefined>(initialStatus);
   const [q, setQ] = useState('');
   const query = q.trim() || undefined;
   const orders = useOrders({ status, q: query });

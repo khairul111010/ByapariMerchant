@@ -84,6 +84,15 @@ Legend: ✅ confirmed by the user on a real phone · 🧪 covered by automated t
 - ⬜ User to review on the phone (needs a native rebuild for the cursor/background colour; the rest is JS).
 - ⬜ Screens still on static light tokens: everything except the orders list. Migrate to `useStyles` before enabling dark mode.
 
+### Merchant-first navigation (2026-11-09)
+- Tabs are now Home · Orders · (+) · Products · More. The centre "+" opens a sheet: New sale, Add product, Scan, Share shop link.
+- Home (`src/features/home/HomeScreen.tsx`): greeting by Dhaka time, today's sales hero card (custom one-day dashboard range), quick tiles, "Needs your attention" (orders to confirm via `GET /orders?status=pending` total, payments to verify from the dashboard, low stock), setup checklist with links, recent orders. Old dashboard opens as "Insights".
+- Selling tools (POS, customers, coupons, delivery charges, landing pages, carts, reviews) moved from a tab into More. Cross-tab jumps go through `src/store/jump.ts`.
+- Order detail: summary card (number, status badge, big total) and a sticky next-step button (confirm → shipped → delivered).
+- Products: pill search with the scan button inside; tools as text links.
+- ⬜ User to review on the phone: Home (all sections, pull to refresh), "+" sheet, share shop link, attention rows open the right list, checklist links, order next-step button, products header.
+- ⬜ Not verified: whether `pending_payments` is store-wide or limited to the dashboard range (the "payments to verify" count uses today's range).
+
 ## Known gaps and open questions
 - **No way to change a password in the app.** A phone-only owner who gets an operator's temporary password (12 random characters) is signed out and can only sign in with it; there is no change-password, change-email or add-phone screen in the backend or the app yet. Needs a backend endpoint first.
 - Backend gaps are in `docs/api-contract.md` under "Gaps" (image upload has no idempotency key; `/me` vs describe inconsistency; `stock_changed` missing from the error table).
@@ -111,7 +120,7 @@ Legend: ✅ confirmed by the user on a real phone · 🧪 covered by automated t
 - `react-native-fast-image` not used yet; the product list uses React Native's `Image`. Check New Architecture support before swapping it in.
 
 ## Tests
-384 unit tests, 40 suites (API client, error mapper, offline queue, formatters, schemas against real samples, rich text, forms, push payload, upload). No component tests or Maestro E2E yet (CLAUDE.md asks for both).
+395 unit tests, 41 suites (API client, error mapper, offline queue, formatters, schemas against real samples, rich text, forms, push payload, upload). No component tests or Maestro E2E yet (CLAUDE.md asks for both).
 
 ## CI readiness (CLAUDE.md: lint, typecheck, test, signed release build)
 - `npm run lint`: 0 errors, 26 style warnings (`void promise` inside arrow functions). `npm run typecheck` clean. `npm test` 174 tests.
@@ -121,3 +130,10 @@ Legend: ✅ confirmed by the user on a real phone · 🧪 covered by automated t
 `docs/samples-selling.md` is untracked: its backup is `test/samples-selling.source.md` (do not overwrite) and its parsed fixture is `test/samples-selling.ts`.
 
 Nothing committed since the initial commit; no remote. Back this up to a private GitHub repo.
+
+## Back navigation and menus (2026-11-09)
+- `ScreenHeader` (round back arrow + title) replaces every full-width "Back" button. It also registers the phone's back button (`useHardwareBack`), only for the focused tab, so it does the same as the arrow. Signup (step back, then login), Forgot password, scanners and the variant editor also listen. On a tab's top screen, phone back goes to Home (navigator default).
+- Settings, Storefront and More use shared `MenuGroup`/`MenuRow` rows (icon, title, one-line hint, chevron) instead of stacked buttons. Settings is grouped into Business / Growth / Account.
+- Short screens no longer show a grey strip (tab scene and navigation theme use the page colour).
+- Delivery charges: Edit is a small link on each card.
+- [ ] Verify on phone: phone back on inner screens, in Signup, and from a tab root; Settings/Storefront/More menus.

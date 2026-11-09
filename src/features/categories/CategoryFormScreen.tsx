@@ -17,6 +17,7 @@ import {
   useSaveCategory,
 } from './hooks';
 import { parentOptions } from './tree';
+import { ScreenHeader } from '../../ui/ScreenHeader';
 
 export function CategoryFormScreen({
   id,
@@ -108,10 +109,7 @@ export function CategoryFormScreen({
       contentContainerStyle={styles.wrap}
       keyboardShouldPersistTaps="handled"
     >
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-      <Text variant="title">
-        {editing ? t('categories.edit') : t('categories.add')}
-      </Text>
+      <ScreenHeader title={editing ? t('categories.edit') : t('categories.add')} onBack={onBack} />
       <Field
         label={t('categories.name')}
         value={name}

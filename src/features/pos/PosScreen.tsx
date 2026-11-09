@@ -37,6 +37,7 @@ import {
 } from './cart';
 import { useCreateSale, useDebounced, usePosSearch } from './hooks';
 import { SkuScanner } from './SkuScanner';
+import { ScreenHeader } from '../../ui/ScreenHeader';
 
 const PHONE = /^01\d{9}$/;
 
@@ -174,8 +175,7 @@ export function PosScreen({ onBack }: { onBack: () => void }) {
       contentContainerStyle={styles.wrap}
       keyboardShouldPersistTaps="handled"
     >
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-      <Text variant="title">{t('pos.title')}</Text>
+      <ScreenHeader title={t('pos.title')} onBack={onBack} />
       <View style={styles.row}>
         <TextInput
           value={q}

@@ -25,6 +25,7 @@ import {
   toCreatePayload,
   toUpdatePayload,
 } from './productForm';
+import { ScreenHeader } from '../../ui/ScreenHeader';
 
 type Props =
   | { mode: 'create'; onBack: () => void; onDone: (id: number) => void }
@@ -146,16 +147,7 @@ export function ProductFormScreen(props: Props) {
       contentContainerStyle={styles.wrap}
       keyboardShouldPersistTaps="handled"
     >
-      <Button
-        title={t('common.back')}
-        kind="secondary"
-        onPress={props.onBack}
-      />
-      <Text variant="title">
-        {editing
-          ? t('products.form.editProduct')
-          : t('products.form.newProduct')}
-      </Text>
+      <ScreenHeader title={editing ? t('products.form.editProduct') : t('products.form.newProduct')} onBack={props.onBack} />
       {text('name', t('products.form.name'))}
       {!editing ? (
         <>

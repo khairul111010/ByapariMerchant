@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, StatusBar, StyleSheet, View } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  DefaultTheme,
+  NavigationContainer,
+  Theme,
+} from '@react-navigation/native';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import './src/i18n';
@@ -61,11 +65,17 @@ function SignedIn() {
   return suspended ? (
     <SuspendedScreen />
   ) : (
-    <NavigationContainer>
+    <NavigationContainer theme={navTheme}>
       <MainTabs />
     </NavigationContainer>
   );
 }
+
+// The page colour behind every screen, so short screens never show a grey strip.
+const navTheme: Theme = {
+  ...DefaultTheme,
+  colors: { ...DefaultTheme.colors, background: colors.bg },
+};
 
 function Root() {
   const status = useSession(s => s.status);

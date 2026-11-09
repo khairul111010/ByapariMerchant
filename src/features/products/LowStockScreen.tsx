@@ -7,6 +7,7 @@ import { useLang } from '../../i18n';
 import { Button, Skeleton, Text } from '../../ui';
 import { colors, spacing, cardStyle } from '../../ui/theme';
 import { useLowStock } from './hooks';
+import { ScreenHeader } from '../../ui/ScreenHeader';
 
 export function LowStockScreen({
   onBack,
@@ -20,8 +21,7 @@ export function LowStockScreen({
   const low = useLowStock();
   return (
     <ScrollView contentContainerStyle={styles.wrap}>
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-      <Text variant="title">{t('inventory.lowTitle')}</Text>
+      <ScreenHeader title={t('inventory.lowTitle')} onBack={onBack} />
       {low.isPending ? (
         <>
           <Skeleton height={64} />

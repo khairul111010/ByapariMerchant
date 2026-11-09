@@ -13,6 +13,7 @@ import {
   useStartImport,
 } from './hooks';
 import { outcome, progressFraction } from './status';
+import { ScreenHeader } from '../../ui/ScreenHeader';
 
 function ImportResult({ id }: { id: number }) {
   const { t } = useTranslation();
@@ -94,8 +95,7 @@ export function ImportScreen({ onBack }: { onBack: () => void }) {
 
   return (
     <ScrollView contentContainerStyle={styles.wrap}>
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-      <Text variant="title">{t('imports.title')}</Text>
+      <ScreenHeader title={t('imports.title')} onBack={onBack} />
       <Text variant="muted">{t('imports.hint')}</Text>
       <Button
         title={activeId === null ? t('imports.choose') : t('imports.another')}

@@ -12,6 +12,7 @@ import { DeleteProduct } from './DeleteProduct';
 import { ProductImages } from './ProductImages';
 import { StockTools } from './StockTools';
 import { DeleteVariant, VariantEditor } from './VariantEditor';
+import { ScreenHeader } from '../../ui/ScreenHeader';
 
 function VariantCard({
   productId,
@@ -117,7 +118,7 @@ export function ProductDetailScreen({
   const [adding, setAdding] = useState(false);
   const product = useProduct(id);
   const header = (
-    <Button title={t('common.back')} kind="secondary" onPress={onBack} />
+    <ScreenHeader onBack={onBack} />
   );
 
   if (product.isPending) {

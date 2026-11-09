@@ -8,6 +8,7 @@ import { ContactActions } from '../orders/ContactActions';
 import { Button, Skeleton, Text } from '../../ui';
 import { colors, spacing, cardStyle } from '../../ui/theme';
 import { useCarts, useDeleteCart } from './hooks';
+import { ScreenHeader } from '../../ui/ScreenHeader';
 
 export function CartsScreen({ onBack }: { onBack: () => void }) {
   const { t } = useTranslation();
@@ -22,8 +23,7 @@ export function CartsScreen({ onBack }: { onBack: () => void }) {
 
   return (
     <ScrollView contentContainerStyle={styles.wrap}>
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-      <Text variant="title">{t('carts.title')}</Text>
+      <ScreenHeader title={t('carts.title')} onBack={onBack} />
       <Text variant="muted">{t('carts.note')}</Text>
       {carts.isPending ? (
         <>

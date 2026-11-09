@@ -5,6 +5,7 @@ import { errorMessage } from '../../api/errorMessage';
 import { Dashboard } from '../../api/schemas/storefront';
 import { formatDate, formatMoney, formatNumber } from '../../i18n/format';
 import { useLang } from '../../i18n';
+import { ScreenHeader } from '../../ui/ScreenHeader';
 import { PendingBanner } from '../shell/PendingBanner';
 import { Button, Skeleton, Text } from '../../ui';
 import { DateField } from '../../ui/DateField';
@@ -138,7 +139,8 @@ function Funnel({ data }: { data: Dashboard }) {
   );
 }
 
-export function DashboardScreen() {
+/** Full analytics, opened from the Home hero card. */
+export function DashboardScreen({ onBack }: { onBack?: () => void } = {}) {
   const { t } = useTranslation();
   const lang = useLang();
   const [mode, setMode] = useState<Mode>(7);
@@ -184,7 +186,7 @@ export function DashboardScreen() {
   return (
     <ScrollView contentContainerStyle={styles.wrap}>
       <PendingBanner />
-      <Text variant="title">{t('dashboard.title')}</Text>
+      <ScreenHeader title={t('home.insightsTitle')} onBack={onBack} />
       <View style={styles.chips}>
         {chips.map(([key, label]) => (
           <Pressable

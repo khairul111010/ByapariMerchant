@@ -31,6 +31,7 @@ import {
 } from '../../ui/theme';
 import { CustomerSort } from './api';
 import { useCustomer, useCustomers } from './hooks';
+import { ScreenHeader } from '../../ui/ScreenHeader';
 
 function CustomerDetail({
   phone,
@@ -44,7 +45,7 @@ function CustomerDetail({
   const c = useCustomer(phone);
   return (
     <ScrollView contentContainerStyle={styles.wrap}>
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
+      <ScreenHeader onBack={onBack} />
       {c.isPending ? (
         <Skeleton height={120} />
       ) : c.isError ? (
@@ -154,8 +155,7 @@ export function CustomersScreen({ onBack }: { onBack: () => void }) {
   return (
     <View style={styles.screen}>
       <View style={styles.header}>
-        <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-        <Text variant="title">{t('customers.title')}</Text>
+        <ScreenHeader title={t('customers.title')} onBack={onBack} />
         <TextInput
           value={q}
           onChangeText={setQ}

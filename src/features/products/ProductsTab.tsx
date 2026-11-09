@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useJump } from '../../store/jump';
 import { CategoriesScreen } from '../categories/CategoriesScreen';
 import { CategoryFormScreen } from '../categories/CategoryFormScreen';
 import { ImportScreen } from '../imports/ImportScreen';
@@ -42,6 +43,15 @@ function EditLoader({
 
 export function ProductsTab() {
   const [view, setView] = useState<View>({ name: 'list' });
+  const jump = useJump(s => s.target);
+  const clearJump = useJump(s => s.clear);
+  // Home tiles and the "+" sheet open Add product, Scan or Low stock directly.
+  useEffect(() => {
+    if (jump?.tab === 'Products') {
+      setView({ name: jump.screen } as View);
+      clearJump();
+    }
+  }, [jump, clearJump]);
   const list = () => setView({ name: 'list' });
   switch (view.name) {
     case 'detail':

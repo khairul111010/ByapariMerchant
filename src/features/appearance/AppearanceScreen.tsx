@@ -13,6 +13,7 @@ import { Button, Field, Skeleton, Text } from '../../ui';
 import { colors, radius, spacing, cardStyle, shadow } from '../../ui/theme';
 import { useAppearance, useAppearanceMutations, useThemes } from './hooks';
 import { normalizeHex, readableOn } from './color';
+import { ScreenHeader } from '../../ui/ScreenHeader';
 
 function Palette({ theme }: { theme: Theme }) {
   const p = theme.preview;
@@ -81,8 +82,7 @@ export function AppearanceScreen({ onBack }: { onBack: () => void }) {
       contentContainerStyle={styles.wrap}
       keyboardShouldPersistTaps="handled"
     >
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-      <Text variant="title">{t('appearance.title')}</Text>
+      <ScreenHeader title={t('appearance.title')} onBack={onBack} />
 
       {appearance.isPending || themes.isPending ? (
         <>

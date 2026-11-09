@@ -23,6 +23,7 @@ export const storeSchema = z
     status: z.string().optional(),
     name: z.string().optional(),
     subdomain: z.string().optional(),
+    storefront_url: z.string().optional(),
     ai_configured: z.boolean().optional(),
     reviews_enabled: z.boolean().optional(),
   })

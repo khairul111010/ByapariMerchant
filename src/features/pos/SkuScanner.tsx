@@ -5,6 +5,7 @@ import { CodeScanner } from 'react-native-vision-camera-barcode-scanner';
 import { useCameraPermission } from 'react-native-vision-camera';
 import { Button, Text } from '../../ui';
 import { colors, spacing } from '../../ui/theme';
+import { useHardwareBack } from '../../ui/useHardwareBack';
 
 /** Camera that reports each distinct scanned value once, then ignores repeats for a moment. */
 export function SkuScanner({
@@ -16,6 +17,7 @@ export function SkuScanner({
   onClose: () => void;
   hint?: string;
 }) {
+  useHardwareBack(onClose);
   const { t } = useTranslation();
   const { hasPermission, canRequestPermission, requestPermission } =
     useCameraPermission();

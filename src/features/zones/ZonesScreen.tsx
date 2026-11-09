@@ -13,6 +13,7 @@ import { Button, Field, Skeleton, Text } from '../../ui';
 import { colors, spacing, cardStyle } from '../../ui/theme';
 import { useUpdateZone, useZones } from './hooks';
 import { makeZoneSchema, toZonePayload, ZoneForm } from './zoneForm';
+import { ScreenHeader } from '../../ui/ScreenHeader';
 
 function ZoneEditor({
   zone,
@@ -105,11 +106,11 @@ export function ZonesScreen({ onBack }: { onBack: () => void }) {
 
   return (
     <ScrollView
+      style={styles.screen}
       contentContainerStyle={styles.wrap}
       keyboardShouldPersistTaps="handled"
     >
-      <Button title={t('common.back')} kind="secondary" onPress={onBack} />
-      <Text variant="title">{t('zones.title')}</Text>
+      <ScreenHeader title={t('zones.title')} onBack={onBack} />
       {!isOwner ? <Text variant="muted">{t('zones.ownerOnly')}</Text> : null}
       {zones.isPending ? (
         <Skeleton height={100} />
@@ -124,9 +125,19 @@ export function ZonesScreen({ onBack }: { onBack: () => void }) {
       ) : (
         zones.data.map(z => (
           <View key={z.zone} style={styles.card}>
-            <Text variant="label">
-              {t(`zones.${z.zone}`, { defaultValue: z.zone })}
-            </Text>
+            <View style={styles.cardHead}>
+              <Text variant="label" style={styles.flex}>
+                {t(`zones.${z.zone}`, { defaultValue: z.zone })}
+              </Text>
+              {isOwner && editing !== z.zone ? (
+                <Button
+                  title={t('zones.edit')}
+                  kind="ghost"
+                  size="sm"
+                  onPress={() => setEditing(z.zone)}
+                />
+              ) : null}
+            </View>
             {editing === z.zone ? (
               <ZoneEditor zone={z} onClose={() => setEditing(null)} />
             ) : (
@@ -141,13 +152,6 @@ export function ZonesScreen({ onBack }: { onBack: () => void }) {
                 {z.estimated_delivery_note ? (
                   <Text variant="muted">{z.estimated_delivery_note}</Text>
                 ) : null}
-                {isOwner ? (
-                  <Button
-                    title={t('zones.edit')}
-                    kind="secondary"
-                    onPress={() => setEditing(z.zone)}
-                  />
-                ) : null}
               </>
             )}
           </View>
@@ -158,6 +162,7 @@ export function ZonesScreen({ onBack }: { onBack: () => void }) {
 }
 
 const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: colors.bg },
   wrap: { padding: spacing.lg, gap: spacing.md, backgroundColor: colors.bg },
   card: {
     ...cardStyle,
@@ -165,4 +170,6 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   form: { gap: spacing.sm },
+  cardHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  flex: { flex: 1 },
 });
