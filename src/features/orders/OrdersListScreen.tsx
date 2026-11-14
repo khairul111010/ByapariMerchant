@@ -8,7 +8,7 @@ import {
   OrderRow,
   OrderStatus,
 } from '../../api/schemas/orders';
-import { PendingBanner } from '../shell/PendingBanner';
+import { StoreBanner } from '../shell/StoreBanner';
 import { Button, SkeletonCard, Text } from '../../ui';
 import { Chip } from '../../ui/Chips';
 import { EmptyState } from '../../ui/EmptyState';
@@ -77,7 +77,7 @@ export function OrdersListScreen({
 
   return (
     <View style={s.screen}>
-      <PendingBanner />
+      <StoreBanner />
       <View style={s.header}>
         <Text variant="title">{t('orders.title')}</Text>
         <View style={s.search}>

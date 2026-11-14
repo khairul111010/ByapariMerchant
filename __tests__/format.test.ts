@@ -1,9 +1,19 @@
 import {
+  formatCount,
   formatDate,
   formatDateTime,
   formatMoney,
   toBanglaDigits,
 } from '../src/i18n/format';
+
+describe('formatCount', () => {
+  it('groups whole counts the Bangladeshi way, with Bangla digits in bn', () => {
+    expect(formatCount(42, 'en')).toBe('42');
+    expect(formatCount(1000, 'en')).toBe('1,000');
+    expect(formatCount(150000, 'en')).toBe('1,50,000');
+    expect(formatCount(2000, 'bn')).toBe('২,০০০');
+  });
+});
 
 describe('formatMoney', () => {
   it('formats with ৳ and drops .00', () => {

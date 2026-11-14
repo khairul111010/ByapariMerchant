@@ -40,7 +40,7 @@ describe('settings schemas accept the real backend samples', () => {
     ok(planEnvelopeSchema, 'Plan (Starter)');
     const growth = planEnvelopeSchema.parse(s['Plan (Growth)']).data;
     expect(growth.plans.find((p) => p.key === 'business')?.staff_accounts).toBeNull();
-    expect(growth.usage.products).toBe('unlimited');
+    expect(growth.usage.products).toEqual({ used: 312, max: 1000 });
   });
 });
 
@@ -61,6 +61,10 @@ describe('error samples', () => {
     expect([b.kind, b.code, b.extra.addon_price_yearly]).toEqual(['plan_gate', 'custom_domain_not_in_plan', 500]);
     const c = mapError(403, s['PLAN LIMIT: add staff past the cap'] as never);
     expect([c.kind, c.code, c.extra.max_staff_accounts]).toEqual(['plan_gate', 'staff_limit_reached', 3]);
+  });
+  it('the product cap is a plan gate carrying max_products (shown as an upgrade prompt)', () => {
+    const e = mapError(403, { message: 'Your plan allows 100 products.', code: 'product_limit_reached', max_products: 100 });
+    expect([e.kind, e.code, e.extra.max_products]).toEqual(['plan_gate', 'product_limit_reached', 100]);
   });
   it('a staff token on an owner-only endpoint is a plain 403 forbidden', () => {
     expect(mapError(403, s['Owner-only: staff token gets 403'] as never).kind).toBe('forbidden');

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { errorCodes, isErrorWithCode, pick, types } from '@react-native-documents/picker';
 import { CsvFile, fetchImport, fetchImports, startImport } from './api';
+import { refreshPlanUsage } from '../products/hooks';
 import { isFinished, MAX_CSV_BYTES } from './status';
 
 export class CsvTooLargeError extends Error {
@@ -61,6 +62,7 @@ export function useImport(id: number | null) {
         void qc.invalidateQueries({ queryKey: ['products'] });
         void qc.invalidateQueries({ queryKey: ['categories'] });
         void qc.invalidateQueries({ queryKey: ['imports'] });
+        refreshPlanUsage(qc); // new rows count toward the product cap
       }
       return data;
     },

@@ -1,4 +1,12 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  QueryClient,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { ApiError } from '../../api/errors';
+import { ME_KEY } from '../auth/useMe';
 import { useSession } from '../../store/session';
 import { useState } from 'react';
 import { pickImage, PickSource, prepareImage } from '../../media/prepare';
@@ -23,6 +31,12 @@ import {
 } from './api';
 
 export const productKey = (id: number) => ['product', id] as const;
+
+/** Product count changed (or the cap was hit): re-read `/me` limits and `/plan` usage. */
+export const refreshPlanUsage = (qc: QueryClient) => {
+  void qc.invalidateQueries({ queryKey: ME_KEY });
+  void qc.invalidateQueries({ queryKey: ['plan'] });
+};
 
 export function useProducts(filters: ProductFilters) {
   const signedIn = useSession((s) => s.status === 'signedIn');
@@ -118,7 +132,16 @@ export function useCreateProduct() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: Record<string, unknown>) => createProduct(body),
-    onSuccess: () => void qc.invalidateQueries({ queryKey: ['products'] }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['products'] });
+      refreshPlanUsage(qc);
+    },
+    onError: e => {
+      // The cap was reached since `/me` was read: re-read it so the pre-check is right next time.
+      if (e instanceof ApiError && e.code === 'product_limit_reached') {
+        refreshPlanUsage(qc);
+      }
+    },
   });
 }
 
@@ -150,6 +173,7 @@ export function useDeleteProduct(id: number) {
       void qc.invalidateQueries({ queryKey: ['products'] });
       void qc.invalidateQueries({ queryKey: ['low-stock'] });
       void qc.invalidateQueries({ queryKey: ['categories'] });
+      refreshPlanUsage(qc);
     },
   });
 }

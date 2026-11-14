@@ -20,7 +20,8 @@ import { useLang } from '../../i18n';
 import { useSession } from '../../store/session';
 import { Chip } from '../../ui/Chips';
 import { Icon } from '../../ui/Icon';
-import { PendingBanner } from '../shell/PendingBanner';
+import { StoreBanner } from '../shell/StoreBanner';
+import { ProductCapLine } from './ProductLimit';
 import { Button, Skeleton, Text } from '../../ui';
 import {
   colors,
@@ -128,7 +129,7 @@ export function ProductsListScreen({
 
   return (
     <View style={styles.screen}>
-      <PendingBanner />
+      <StoreBanner />
       <View style={styles.header}>
         <View style={styles.titleRow}>
           <Text variant="title" style={styles.flex}>
@@ -141,6 +142,7 @@ export function ProductsListScreen({
             onPress={onCreate}
           />
         </View>
+        <ProductCapLine />
         <View style={styles.searchPill}>
           <Icon name="search" size={20} color={colors.textMuted} />
           <TextInput

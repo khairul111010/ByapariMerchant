@@ -19,19 +19,20 @@ Tokens expire after 90 days (`SANCTUM_TOKEN_EXPIRATION`, minutes).
 
 ## Opening an account (central domain)
 A new merchant has no store yet, so these three live on the **central domain** (`https://{central-domain}/api/v1/...`), not on a shop host. The app needs this one configured address; everything after signup uses the store's own host.
-- `GET /signup/options` → `{plans:[{key,label,blurb,price_yearly,price_monthly_quote,staff_accounts (null = unlimited),custom_domain_included,courier_drivers}], custom_domain_addon_price, categories:[{key,label,starting_theme}]}`. Show prices **per month, billed yearly** (`price_monthly_quote`).
+- `GET /signup/options` → `{plans:[{key,label,blurb,price_yearly,price_monthly_quote,staff_accounts (null = unlimited),products,orders_per_month,has_trial,trial_days,custom_domain_included,courier_drivers}], custom_domain_addon_price, categories:[{key,label,starting_theme}]}`. Show prices **per month, billed yearly** (`price_monthly_quote`).
 - `GET /signup/subdomain-availability?subdomain=` → `{available, message}` (use for a live check; same rules signup applies)
 - `POST /signup` `{plan, store_name, subdomain, category, owner_name, owner_email?, owner_phone?, owner_password, owner_password_confirmation, whatsapp_number?, device_name?}` → `201` `{token, user, store, limits, platform, unread_notifications}` — the same payload as login. **At least one of `owner_email` / `owner_phone` is required** (2026-11-05); the phone is a BD mobile (`01XXXXXXXXX`; `+88`, spaces and dashes are normalised) and is **not verified** (no OTP). `user` now carries `phone` (nullable) alongside `email` (nullable). **Save `store.api_base_url`** and use it for every later call.
 - Throttled: 10 signups/hour per IP (`429`). A name lost to a race returns `422` on `subdomain`.
-- The store starts **`pending`** on the chosen plan (no trial). The owner can set everything up straight away; the public storefront shows "coming soon" until the operator approves it after payment. Payment is confirmed **outside the app**: show the "not live yet" banner when `store.is_pending`, with a button opening `platform.support_whatsapp_url` (prefilled message). Never show payment details in-app.
+- A **Starter** signup starts on a **free trial** (`status: trial`, `trial_ends_at` = end of day 7, Asia/Dhaka), storefront live. A **Growth/Business** signup starts `pending` (no trial): set-up works, storefront closed (`store.storefront_closed`) until the operator confirms payment. When the trial lapses without a paid plan the storefront closes for buyers (`store.storefront_closed`) while the app keeps working. Payment is confirmed **outside the app**: show a trial countdown while `store.is_trial`, and a "shop closed" banner when `store.storefront_closed`, each with a button opening `platform.support_whatsapp_url` (prefilled message). Never show payment details in-app. (A `pending` store — Growth/Business awaiting payment — shows the same `storefront_closed` banner, worded "not live yet".)
 - The same email can own stores on different subdomains (merchant accounts are per store).
 
 ## Auth
-- `POST /auth/login` `{login, password, device_name?}` → `{token, user, store, limits, unread_notifications}` — `login` is an email **or** phone (any typed form of the number); the old `email` field name still works. Forgot-password stays email-only: a phone-only owner contacts support and the operator sets a temporary password. (was `{email, password, device_name?}`)
+- `POST /auth/login` `{login, password, device_name?}` — `login` is an email **or** phone (any typed form of the number); the old `email` field name still works. Forgot-password stays email-only: a phone-only owner contacts support and the operator sets a temporary password.
+- (was) `{email, password, device_name?}` → `{token, user, store, limits, unread_notifications}`
 - `POST /auth/forgot-password` `{email}` → always the same `200` message, whether or not the email has an account on this store (no account enumeration). If it does, a reset link is emailed; it opens the store's web reset page, which works in a phone browser — the merchant sets a new password there, then logs in in the app. Throttled (3/min per email+IP).
 - `POST /auth/reset-password` `{token, email, password, password_confirmation}` → `200`, or `422 invalid_reset_token`. For when the app handles the emailed link itself (needs Android App Links); not required today. A successful reset **signs the account out of every phone** (all tokens revoked). Same throttle as above, which also stops token guessing.
 - `POST /auth/logout` → revokes the current token
-- `GET /me` → `{user{id,name,email (nullable),phone (nullable),is_owner,roles}, store, limits, platform, unread_notifications}` (`store.api_base_url`; `platform.support_whatsapp_url` for the pending banner) (`store.ai_configured` → show "Generate with AI" only when true; `store.reviews_enabled`) (call on launch; `store.is_pending` drives the "not live yet" banner)
+- `GET /me` → `{user, store, limits, platform, unread_notifications}` (`store.api_base_url`; `platform.support_whatsapp_url` for the pending banner) (`store.ai_configured` → show "Generate with AI" only when true; `store.reviews_enabled`) (call on launch; `store.is_trial` / `store.trial_ends_at` drive the trial countdown and `store.storefront_closed` the "shop closed" banner; `limits.max_products`, `limits.can_add_product`, `limits.max_orders_per_month`, `limits.order_limit_state` = `ok|near|over`)
 
 `limits` comes from `PlanLimits`: render disabled/upgrade states from it, never from the plan name.
 
@@ -79,7 +80,7 @@ The text is English and deliberately contains **no customer name, phone or addre
 ## Products
 - `GET /products?status=&category_id=&featured=&low_stock=&q=&per_page=` — compact rows (`thumb`, `default_variant`); `q` matches name or SKU
 - `GET /products/{id}` — full: description, SEO fields, `images`, `variants` (each with `images`, `price_tiers`), `storefront_url`
-- `POST /products` `{name, status: draft|active|archived, sku, price, stock_quantity, category_id?, description?, compare_at_price?, weight_grams?, brand?, meta_title?, meta_description?, track_inventory?, is_featured?}` → creates the product and its default variant
+- `POST /products` `{name, status: draft|active|archived, sku, price, stock_quantity, category_id?, description?, compare_at_price?, weight_grams?, brand?, meta_title?, meta_description?, track_inventory?, is_featured?}` → creates the product and its default variant. Past the plan's product cap → `403 {code:"product_limit_reached", max_products}` — show an upgrade prompt, not a form error. Enforced where the product row is created, so CSV import obeys it too (extra new rows are reported as failed rows)
 - `PUT /products/{id}` `{name, status, category_id?, description?, brand?, meta_*?, track_inventory?, is_featured?}`
 - `DELETE /products/{id}`
 - `POST /products/describe` `{name, category_id?}` → `{description}` — merchant's own AI key; `422` if none configured (the app should show the button only when `/me` says AI is configured — **not yet exposed**, see below). English only.
@@ -202,7 +203,7 @@ Ownership is proven **only** by the TXT record — a CNAME never counts (a delet
 - `PUT /domains/{id}/primary` (verified only, else `422 not_verified`), `DELETE /domains/{id}`. HTTPS is issued automatically once traffic arrives.
 
 ## Staff accounts (owner only)
-- `GET /staff` → `{max_staff_accounts (null = unlimited), can_add_staff_account, data:[{id,name,email (nullable),phone (nullable),role,created_at}]}`
+- `GET /staff` → `{max_staff_accounts (null = unlimited), can_add_staff_account, data:[{id,name,email,role,created_at}]}`
 - `POST /staff` `{name, email, password, password_confirmation, role: owner|staff}`. Over the plan's seat cap → `403 {code:"staff_limit_reached", max_staff_accounts}` — show an upgrade prompt, not a form error. The cap is enforced where the user row is created, so no path bypasses it.
 - `PUT /staff/{id}` `{name, email, role, password?, password_confirmation?}`. Setting a password **signs that person out of every phone**.
 - `DELETE /staff/{id}` — signs their phone out immediately. `422` for removing yourself, or for demoting/removing the **last owner** (a store always keeps one).
@@ -210,8 +211,8 @@ Ownership is proven **only** by the TXT record — a CNAME never counts (a delet
 - Downgrading a plan never strips existing seats — the cap only blocks adding more.
 
 ## Plan & billing (owner only, read-only)
-- `GET /plan` → `{plan:{key,label,price_yearly,price_monthly_quote,status,is_pending,trial_ends_at}, renewal:{expires_at,overdue,days_left}, usage:{staff_accounts:{used,max}, courier_drivers:{enabled,configured}, products:"unlimited", orders:"unlimited"}, custom_domain:{…}, plans:[… is_current, is_upgrade, contact_whatsapp_url], renew_whatsapp_url}`
-- There is **no self-serve billing and no payment details in the app.** Upgrading or renewing = opening the prefilled `contact_whatsapp_url` / `renew_whatsapp_url`; the operator confirms payment outside the app and changes the plan. Quote prices per month, billed yearly. Products and orders are unlimited on every plan — never show a cap.
+- `GET /plan` → `{plan:{key,label,price_yearly,price_monthly_quote,products,orders_per_month,has_trial,trial_days,status,state (trial|trial_expired|pending|active|overdue|suspended|cancelled),is_pending,is_trial,trial_expired,storefront_closed,trial_ends_at,trial_days_left}, renewal:{expires_at,overdue,days_left}, usage:{staff_accounts:{used,max}, products:{used,max}, orders:{used,max,state: ok|near|over}, courier_drivers:{enabled,configured}}, custom_domain:{…}, plans:[… is_current, is_upgrade, contact_whatsapp_url], renew_whatsapp_url, history:[{date,label,period_from,period_to,amount,payment_reference}]}` — `max: null` = unlimited. **Breaking (2026-11-14):** `usage.products`/`usage.orders` were the string `"unlimited"`, now objects. `history` is newest first; `amount` in BDT, `0` for the free trial, `null` when not recorded.
+- There is **no self-serve billing and no payment details in the app.** Upgrading or renewing = opening the prefilled `contact_whatsapp_url` / `renew_whatsapp_url`; the operator confirms payment outside the app and changes the plan. Quote prices per month, billed yearly. Products are a hard cap; orders are a **soft** monthly limit (Asia/Dhaka calendar month, cancelled excluded) — warn at `near`/`over`, never block order entry.
 - `renewal.expires_at` is null for a new `pending` store until the operator approves it.
 
 ## Not built yet

@@ -26,6 +26,7 @@ import {
   toUpdatePayload,
 } from './productForm';
 import { ScreenHeader } from '../../ui/ScreenHeader';
+import { ProductLimitSheet } from './ProductLimit';
 
 type Props =
   | { mode: 'create'; onBack: () => void; onDone: (id: number) => void }
@@ -46,6 +47,8 @@ export function ProductFormScreen(props: Props) {
     htmlToBlocks(editing?.description),
   );
   const [formError, setFormError] = useState<string | null>(null);
+  // `403 product_limit_reached`: an upgrade prompt, not a form error. undefined = not shown.
+  const [limitMax, setLimitMax] = useState<number | null | undefined>(undefined);
   const aiConfigured = useMe().data?.store.ai_configured === true;
   const describe = useDescribeProduct();
   const [aiMessage, setAiMessage] = useState<string | null>(null);
@@ -100,6 +103,11 @@ export function ProductFormScreen(props: Props) {
         props.onDone(created.id);
       }
     } catch (e) {
+      if (e instanceof ApiError && e.code === 'product_limit_reached') {
+        const max = e.extra.max_products;
+        setLimitMax(typeof max === 'number' ? max : null);
+        return;
+      }
       if (e instanceof ApiError && e.kind === 'validation') {
         let shown = false;
         for (const [field, messages] of Object.entries(e.fieldErrors)) {
@@ -263,6 +271,12 @@ export function ProductFormScreen(props: Props) {
         title={t('products.form.save')}
         onPress={submit}
         loading={formState.isSubmitting}
+      />
+      <ProductLimitSheet
+        visible={limitMax !== undefined}
+        max={limitMax ?? null}
+        onClose={() => setLimitMax(undefined)}
+        onLeave={props.onBack}
       />
     </ScrollView>
   );

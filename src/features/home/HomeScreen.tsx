@@ -27,7 +27,7 @@ import { DashboardScreen } from '../dashboard/DashboardScreen';
 import { useDashboard } from '../dashboard/hooks';
 import { fetchOrders } from '../orders/api';
 import { useLowStock } from '../products/hooks';
-import { PendingBanner } from '../shell/PendingBanner';
+import { StoreBanner } from '../shell/StoreBanner';
 import { greetingFor, initialOf, todayRange } from './logic';
 import { shareShop } from './share';
 
@@ -288,7 +288,7 @@ export function HomeScreen() {
 
   return (
     <View style={s.screen}>
-      <PendingBanner />
+      <StoreBanner />
       <ScrollView
         contentContainerStyle={s.body}
         showsVerticalScrollIndicator={false}

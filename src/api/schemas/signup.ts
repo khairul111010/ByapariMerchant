@@ -12,6 +12,10 @@ export const planSchema = z
     price_yearly: amount,
     price_monthly_quote: amount,
     staff_accounts: z.number().nullable(),
+    products: z.number().nullable().optional(), // null = unlimited
+    orders_per_month: z.number().nullable().optional(), // null = unlimited
+    has_trial: z.boolean().optional(),
+    trial_days: z.number().optional(),
     custom_domain_included: z.boolean(),
     courier_drivers: z.unknown().optional(),
   })

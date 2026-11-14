@@ -9,7 +9,7 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import './src/i18n';
 import { hasChosenLanguage } from './src/i18n';
-import { persister, queryClient } from './src/app/queryClient';
+import { CACHE_BUSTER, persister, queryClient } from './src/app/queryClient';
 import { ForgotPasswordScreen } from './src/features/auth/ForgotPasswordScreen';
 import { LanguageScreen } from './src/features/auth/LanguageScreen';
 import { LoginScreen } from './src/features/auth/LoginScreen';
@@ -105,7 +105,7 @@ export default function App() {
         <StatusBar barStyle="dark-content" />
         <PersistQueryClientProvider
           client={queryClient}
-          persistOptions={{ persister }}
+          persistOptions={{ persister, buster: CACHE_BUSTER }}
         >
           <SafeAreaView style={styles.root}>
             <Root />

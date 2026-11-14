@@ -6,7 +6,7 @@ import { Dashboard } from '../../api/schemas/storefront';
 import { formatDate, formatMoney, formatNumber } from '../../i18n/format';
 import { useLang } from '../../i18n';
 import { ScreenHeader } from '../../ui/ScreenHeader';
-import { PendingBanner } from '../shell/PendingBanner';
+import { StoreBanner } from '../shell/StoreBanner';
 import { Button, Skeleton, Text } from '../../ui';
 import { DateField } from '../../ui/DateField';
 import { SectionHeader } from '../../ui/SectionHeader';
@@ -185,7 +185,7 @@ export function DashboardScreen({ onBack }: { onBack?: () => void } = {}) {
 
   return (
     <ScrollView contentContainerStyle={styles.wrap}>
-      <PendingBanner />
+      <StoreBanner />
       <ScreenHeader title={t('home.insightsTitle')} onBack={onBack} />
       <View style={styles.chips}>
         {chips.map(([key, label]) => (

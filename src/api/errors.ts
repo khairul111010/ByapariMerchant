@@ -49,6 +49,7 @@ const PLAN_GATE_CODES = new Set([
   'staff_limit_reached',
   'custom_domain_not_in_plan',
   'driver_not_in_plan',
+  'product_limit_reached',
 ]);
 
 /** The single place HTTP statuses and server codes become typed errors. */

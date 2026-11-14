@@ -117,17 +117,45 @@ const planOptionSchema = z.object({
   price_yearly: amount,
   price_monthly_quote: amount,
   staff_accounts: z.number().nullable(),
+  products: z.number().nullable(), // hard cap, null = unlimited
+  orders_per_month: z.number().nullable(), // soft limit, null = unlimited
+  has_trial: z.boolean(),
+  trial_days: z.number(),
   custom_domain_included: z.boolean(),
   courier_drivers: z.array(z.string()),
 });
+export const PLAN_STATES = ['trial', 'trial_expired', 'pending', 'active', 'overdue', 'suspended', 'cancelled'] as const;
+export type PlanState = (typeof PLAN_STATES)[number];
+const usageSchema = z.object({ used: z.number(), max: z.number().nullable() }); // max null = unlimited
+export const ORDER_LIMIT_STATES = ['ok', 'near', 'over'] as const;
+export type OrderLimitState = (typeof ORDER_LIMIT_STATES)[number];
+export const historyRowSchema = z.object({
+  date: z.string(),
+  label: z.string(),
+  period_from: z.string().nullable(),
+  period_to: z.string().nullable(),
+  amount: z.number().nullable(), // BDT; 0 = the free trial, null = not recorded
+  payment_reference: z.string().nullable(),
+});
+export type HistoryRow = z.infer<typeof historyRowSchema>;
 export const planSchema = z.object({
-  plan: planOptionSchema.extend({ status: z.string(), is_pending: z.boolean(), trial_ends_at: z.string().nullable() }),
+  plan: planOptionSchema.extend({
+    status: z.string(),
+    // An unknown future state shows as a neutral badge instead of failing the whole screen.
+    state: z.string(),
+    is_pending: z.boolean(),
+    is_trial: z.boolean(),
+    trial_expired: z.boolean(),
+    storefront_closed: z.boolean(),
+    trial_ends_at: z.string().nullable(),
+    trial_days_left: z.number().nullable(),
+  }),
   renewal: z.object({ expires_at: z.string().nullable(), overdue: z.boolean(), days_left: z.number().nullable() }),
   usage: z.object({
-    staff_accounts: z.object({ used: z.number(), max: z.number().nullable() }),
+    staff_accounts: usageSchema,
+    products: usageSchema,
+    orders: usageSchema.extend({ state: z.enum(ORDER_LIMIT_STATES) }),
     courier_drivers: z.object({ enabled: z.array(z.string()), configured: z.array(z.string()) }),
-    products: z.string(), // "unlimited": never show a cap
-    orders: z.string(),
   }),
   custom_domain: z.object({
     enabled: z.boolean(),
@@ -137,6 +165,7 @@ export const planSchema = z.object({
   }),
   plans: z.array(planOptionSchema.extend({ is_current: z.boolean(), is_upgrade: z.boolean(), contact_whatsapp_url: z.string().nullable() })),
   renew_whatsapp_url: z.string().nullable(),
+  history: z.array(historyRowSchema), // newest first
 });
 export const planEnvelopeSchema = z.object({ data: planSchema });
 export type PlanData = z.infer<typeof planSchema>;

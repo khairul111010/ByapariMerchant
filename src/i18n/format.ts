@@ -39,6 +39,12 @@ export function formatMoney(value: string | null | undefined, lang: Lang): strin
 export const formatNumber = (n: number | string, lang: Lang): string =>
   localizeDigits(String(n), lang);
 
+/** A whole count with Bangladeshi grouping: 1000 -> "1,000", 150000 -> "1,50,000" (Bangla digits in bn). */
+export const formatCount = (n: number, lang: Lang): string => {
+  const int = String(Math.trunc(Math.abs(n)));
+  return localizeDigits((n < 0 ? '-' : '') + groupBd(int), lang);
+};
+
 const DHAKA_OFFSET_MS = 6 * 60 * 60 * 1000; // UTC+6, no DST
 
 export const MONTHS: Record<Lang, string[]> = {

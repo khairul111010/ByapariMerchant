@@ -23,7 +23,8 @@ export type JumpTarget =
         | 'appearance'
         | 'settings'
         | 'payments'
-        | 'general';
+        | 'general'
+        | 'plan';
     };
 
 interface JumpState {

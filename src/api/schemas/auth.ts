@@ -21,6 +21,12 @@ export const storeSchema = z
     api_base_url: z.string(),
     is_pending: z.boolean(),
     status: z.string().optional(),
+    // Free trial (Starter only). Optional so an older cached `/me` still parses.
+    is_trial: z.boolean().optional(),
+    trial_ends_at: z.string().nullable().optional(),
+    // Buyers can't reach the shop: pending payment, or the trial ended unpaid.
+    storefront_closed: z.boolean().optional(),
+    plan: z.string().optional(),
     name: z.string().optional(),
     subdomain: z.string().optional(),
     storefront_url: z.string().optional(),
@@ -33,6 +39,11 @@ export const limitsSchema = z
   .object({
     max_staff_accounts: z.number().nullable(),
     can_add_staff_account: z.boolean(),
+    // Products are a hard cap; orders per month are a soft limit that only ever warns.
+    max_products: z.number().nullable().optional(), // null = unlimited
+    can_add_product: z.boolean().optional(),
+    max_orders_per_month: z.number().nullable().optional(), // null = unlimited
+    order_limit_state: z.enum(['ok', 'near', 'over']).optional(),
     custom_domain_enabled: z.boolean(),
     courier_drivers: z.array(z.string()),
     configured_courier_drivers: z.array(z.string()),
@@ -62,5 +73,6 @@ export const sessionPayloadSchema = meSchema.extend({
 
 export type User = z.infer<typeof userSchema>;
 export type Store = z.infer<typeof storeSchema>;
+export type Limits = z.infer<typeof limitsSchema>;
 export type Me = z.infer<typeof meSchema>;
 export type SessionPayload = z.infer<typeof sessionPayloadSchema>;

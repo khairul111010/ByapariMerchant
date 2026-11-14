@@ -7,6 +7,12 @@ import { reportError } from '../telemetry/crash';
 
 const CACHE_KEY = 'rq.cache';
 
+/**
+ * Bump when a cached reply's shape changes, so a phone never renders an old persisted reply
+ * with new code. 2026-11-14: `/plan` usage.products/orders changed from "unlimited" to objects.
+ */
+export const CACHE_BUSTER = '2026-11-14';
+
 // Only unexpected failures are worth a crash report; 4xx and offline are normal.
 const reportIfUnexpected = (err: unknown) => {
   if (!(err instanceof ApiError) || err.kind === 'server' || err.kind === 'invalid_response') {

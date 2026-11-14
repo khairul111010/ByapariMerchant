@@ -93,6 +93,15 @@ Legend: ✅ confirmed by the user on a real phone · 🧪 covered by automated t
 - ⬜ User to review on the phone: Home (all sections, pull to refresh), "+" sheet, share shop link, attention rows open the right list, checklist links, order next-step button, products header.
 - ⬜ Not verified: whether `pending_payments` is store-wide or limited to the dashboard range (the "payments to verify" count uses today's range).
 
+### Plans, free trial, usage limits, subscription history (backend change 2026-11-14)
+- **Breaking:** `/plan` `usage.products`/`usage.orders` are `{used,max}` objects now (orders add `state: ok|near|over`), no longer the string `"unlimited"`. The persisted query cache has a buster (`CACHE_BUSTER` in `src/app/queryClient.ts`) so a phone never renders an old cached `/plan` with new code.
+- Signup cards (`SignupScreen`): Starter shows a big "Free" + "for 7 days" + "Then ৳350/month, billed yearly"; other plans show "৳X/month" and "৳Y billed yearly · live once paid"; each lists products · orders/month · staff · couriers · custom domain.
+- App-wide store banner (`src/features/shell/StoreBanner.tsx`, replaces PendingBanner, same places: Home, Orders, Products, Insights, More). One at a time: not live yet → trial ended → trial days left → orders over → orders near (`pickStoreBanner` in `src/features/plan/logic.ts`). Owners tap the text to open Subscription; staff don't get that link. The order-limit banners have no WhatsApp button.
+- Subscription screen (`src/features/plan/PlanScreen.tsx`, Settings > Subscription, owner only): status header with Pay/Renew on WhatsApp, usage bars, swipeable plans with "Choose {plan}", history.
+- Product cap: `limits.can_add_product` false → the upgrade prompt opens instead of the create form (checked once when it opens); `403 product_limit_reached` → the same prompt as a sheet over the form (typed fields kept). Products list shows "{used} of {max} products on your plan" for owners (red with "Upgrade to add more" at the cap); staff see a line only at the cap.
+- Orders are never blocked or warned about inside order entry or POS (nothing there reads the order limit).
+- ⬜ Verify on phone: Starter signup card and landing in the app on trial; Growth/Business signup landing as pending; each banner (pending, trial, trial ended, orders near, orders over); Subscription screen (all four sections, Pay/Renew/Choose open WhatsApp); add product at the cap (pre-check and the 403); POS sale while over the order limit.
+
 ## Known gaps and open questions
 - **No way to change a password in the app.** A phone-only owner who gets an operator's temporary password (12 random characters) is signed out and can only sign in with it; there is no change-password, change-email or add-phone screen in the backend or the app yet. Needs a backend endpoint first.
 - Backend gaps are in `docs/api-contract.md` under "Gaps" (image upload has no idempotency key; `/me` vs describe inconsistency; `stock_changed` missing from the error table).
@@ -120,7 +129,7 @@ Legend: ✅ confirmed by the user on a real phone · 🧪 covered by automated t
 - `react-native-fast-image` not used yet; the product list uses React Native's `Image`. Check New Architecture support before swapping it in.
 
 ## Tests
-395 unit tests, 41 suites (API client, error mapper, offline queue, formatters, schemas against real samples, rich text, forms, push payload, upload). No component tests or Maestro E2E yet (CLAUDE.md asks for both).
+422 tests, 42 suites (API client, error mapper, offline queue, formatters, schemas against real samples, rich text, forms, push payload, upload, plan logic). Component tests: ui kit, Subscription screen, store banner, product-limit prompt, signup plan cards. No Maestro E2E yet (CLAUDE.md asks for it).
 
 ## CI readiness (CLAUDE.md: lint, typecheck, test, signed release build)
 - `npm run lint`: 0 errors, 26 style warnings (`void promise` inside arrow functions). `npm run typecheck` clean. `npm test` 174 tests.

@@ -8,7 +8,9 @@ import { errorMessage } from '../../api/errorMessage';
 import { ApiError } from '../../api/errors';
 import { queryClient } from '../../app/queryClient';
 import { storeApiBaseUrl } from '../../config';
-import { formatMoney, formatNumber } from '../../i18n/format';
+import type { TFunction } from 'i18next';
+import type { SignupPlan } from '../../api/schemas/signup';
+import { formatCount, formatMoney, formatNumber, Lang } from '../../i18n/format';
 import { useLang } from '../../i18n';
 import { KV_KEYS, kv } from '../../storage/mmkv';
 import { useHardwareBack } from '../../ui/useHardwareBack';
@@ -25,6 +27,77 @@ import {
   toSignupPayload,
 } from './signupSchema';
 import { ME_KEY } from './useMe';
+
+/**
+ * Starter has a free trial: a big "Free", "for N days", then the price after it. Other plans
+ * show their price and that the shop goes live once paid. Always per month, billed yearly.
+ */
+function PlanPrice({ plan: p }: { plan: SignupPlan }) {
+  const { t } = useTranslation();
+  const lang = useLang();
+  const monthly = formatMoney(String(p.price_monthly_quote), lang);
+  if (p.has_trial && (p.trial_days ?? 0) > 0) {
+    return (
+      <View style={{ gap: 2 }}>
+        <View style={styles.priceRow}>
+          <Text variant="display">{t('signup.free')}</Text>
+          <Text>
+            {t('signup.forDays', {
+              count: formatCount(p.trial_days ?? 0, lang),
+            })}
+          </Text>
+        </View>
+        <Text variant="muted">
+          {t('signup.thenPerMonth', { amount: monthly })}
+        </Text>
+      </View>
+    );
+  }
+  return (
+    <View style={{ gap: 2 }}>
+      <Text variant="subtitle">
+        {t('signup.perMonthShort', { amount: monthly })}
+      </Text>
+      <Text variant="muted">
+        {t('signup.yearlyLive', {
+          amount: formatMoney(String(p.price_yearly), lang),
+        })}
+      </Text>
+    </View>
+  );
+}
+
+/** "100 products · 500 orders/month · 1 staff account · 1 courier · custom domain …" */
+function planFeatures(p: SignupPlan, t: TFunction, lang: Lang): string {
+  const couriers = Array.isArray(p.courier_drivers)
+    ? p.courier_drivers.length
+    : null;
+  return [
+    p.products === undefined
+      ? null
+      : p.products === null
+      ? t('signup.productsUnlimited')
+      : t('signup.productsCount', { count: formatCount(p.products, lang) }),
+    p.orders_per_month === undefined
+      ? null
+      : p.orders_per_month === null
+      ? t('signup.ordersUnlimited')
+      : t('signup.ordersCount', {
+          count: formatCount(p.orders_per_month, lang),
+        }),
+    p.staff_accounts === null
+      ? t('signup.staffUnlimited')
+      : t('signup.staffCount', { count: formatCount(p.staff_accounts, lang) }),
+    couriers === null
+      ? null
+      : t('signup.couriersCount', { count: formatCount(couriers, lang) }),
+    p.custom_domain_included
+      ? t('signup.customDomainIncluded')
+      : t('signup.customDomainAddon'),
+  ]
+    .filter(Boolean)
+    .join(' · ');
+}
 
 type Availability = 'idle' | 'checking' | 'ok' | 'taken' | 'error';
 
@@ -187,26 +260,8 @@ export function SignupScreen({ onBackToLogin }: { onBackToLogin: () => void }) {
                   >
                     <Text variant="label">{p.label}</Text>
                     {p.blurb ? <Text variant="muted">{p.blurb}</Text> : null}
-                    <Text>
-                      {t('signup.perMonth', {
-                        amount: formatMoney(
-                          String(p.price_monthly_quote),
-                          lang,
-                        ),
-                      })}
-                    </Text>
-                    <Text variant="muted">
-                      {p.staff_accounts === null
-                        ? t('signup.staffUnlimited')
-                        : t('signup.staffCount', {
-                            count: formatNumber(p.staff_accounts, lang),
-                          })}
-                    </Text>
-                    {p.custom_domain_included ? (
-                      <Text variant="muted">
-                        {t('signup.customDomainIncluded')}
-                      </Text>
-                    ) : null}
+                    <PlanPrice plan={p} />
+                    <Text variant="muted">{planFeatures(p, t, lang)}</Text>
                   </Choice>
                 ))}
                 {fieldState.error ? (
@@ -406,4 +461,10 @@ const styles = StyleSheet.create({
   logo: { alignItems: 'flex-start', marginBottom: spacing.sm },
   wrap: { padding: spacing.xl, gap: spacing.md, flexGrow: 1 },
   group: { gap: spacing.md },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
 });

@@ -7,6 +7,7 @@ describe('mapError', () => {
     [403, { code: 'staff_limit_reached' }, 'plan_gate'],
     [403, { code: 'driver_not_in_plan' }, 'plan_gate'],
     [403, { code: 'custom_domain_not_in_plan' }, 'plan_gate'],
+    [403, { code: 'product_limit_reached', max_products: 100 }, 'plan_gate'],
     [404, {}, 'not_found'],
     [409, { code: 'stock_changed' }, 'conflict'],
     [422, { errors: { email: ['bad'] } }, 'validation'],

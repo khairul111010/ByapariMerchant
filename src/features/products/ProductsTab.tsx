@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { usePlanLimits } from '../../hooks/usePlanLimits';
 import { useJump } from '../../store/jump';
 import { CategoriesScreen } from '../categories/CategoriesScreen';
 import { CategoryFormScreen } from '../categories/CategoryFormScreen';
 import { ImportScreen } from '../imports/ImportScreen';
 import { LowStockScreen } from './LowStockScreen';
+import { ProductLimitScreen } from './ProductLimit';
 import { ProductFormScreen } from './ProductFormScreen';
 import { useProduct } from './hooks';
 import { ProductDetailScreen } from './ProductDetailScreen';
@@ -41,6 +43,27 @@ function EditLoader({
   ) : null;
 }
 
+/**
+ * At the plan's product cap, the upgrade prompt instead of a form that can't be saved. The check
+ * is taken once, when the screen opens, so a background `/me` refresh never wipes a half-filled
+ * form; the server's `403 product_limit_reached` covers the rest.
+ */
+function CreateGate({
+  onBack,
+  onDone,
+}: {
+  onBack: () => void;
+  onDone: (id: number) => void;
+}) {
+  const { canAddProduct } = usePlanLimits();
+  const [blocked] = useState(!canAddProduct);
+  return blocked ? (
+    <ProductLimitScreen onBack={onBack} />
+  ) : (
+    <ProductFormScreen mode="create" onBack={onBack} onDone={onDone} />
+  );
+}
+
 export function ProductsTab() {
   const [view, setView] = useState<View>({ name: 'list' });
   const jump = useJump(s => s.target);
@@ -65,8 +88,7 @@ export function ProductsTab() {
       );
     case 'create':
       return (
-        <ProductFormScreen
-          mode="create"
+        <CreateGate
           onBack={list}
           onDone={id => setView({ name: 'detail', id })}
         />

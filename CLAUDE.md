@@ -1,7 +1,7 @@
 # Project: Bypari Merchant App (React Native, bare workflow)
 
 ## What this is
-The merchant's whole business in their pocket. Bypari is a multi-tenant e-commerce SaaS for Bangladeshi small businesses (flat ৳4,200/year, no commission, unlimited products and orders). Its merchants are mostly Facebook-page sellers on **mid-range Android phones over slow data**, and **most have no desktop or laptop** — so this app is their *only* admin panel. It must give full control: if a merchant can do it on the web admin, they can do it here. Everything in Bangla and English.
+The merchant's whole business in their pocket. Bypari is a multi-tenant e-commerce SaaS for Bangladeshi small businesses (three plans billed yearly, quoted per month; no commission, never a per-order fee; a 7-day free trial on Starter only). Its merchants are mostly Facebook-page sellers on **mid-range Android phones over slow data**, and **most have no desktop or laptop** — so this app is their *only* admin panel. It must give full control: if a merchant can do it on the web admin, they can do it here. Everything in Bangla and English.
 
 This repo is **only the mobile client**. The Laravel backend lives in a separate repo and is **already built for this app** (milestones M1–M5). Read `docs/api-contract.md` before writing any networking code. Never invent endpoints; if one is missing, write it down under "Gaps" in that file and tell the user — don't mock around it silently.
 
@@ -20,9 +20,9 @@ Suggested libraries (confirm each in the plan; flag anything needing custom nati
 `@react-native-firebase/app` + `messaging`, `@notifee/react-native` (channels, heads-up, action buttons), `react-native-vision-camera` (+ code scanner), `react-native-image-picker`, `react-native-image-resizer`, `react-native-keychain`, `react-native-mmkv`, `react-native-biometrics`, `@react-native-community/netinfo`, `@shopify/flash-list`, `react-native-fast-image`, `react-native-share`, `react-native-html-to-pdf` / `react-native-print`, a Bluetooth ESC/POS printer library (58/80 mm), `react-native-inappbrowser-reborn`, `react-native-document-picker`, `react-native-svg`, `i18next` + `react-i18next`, Sentry or Crashlytics (PII scrubbed).
 
 ## Product rules (inherited from the platform — never violate)
-1. **No feature gating.** Every plan has the same features; plans differ only by *usage limits* (staff seats, courier drivers, custom-domain add-on). The server decides. Read limits from `/me` and `/plan`; render disabled/upgrade states from the server's response and error codes (`staff_limit_reached`, `custom_domain_not_in_plan`, `driver_not_in_plan`). **Never** write `if (plan === 'starter')` in UI code. One `usePlanLimits()` hook only.
+1. **No feature gating.** Every plan has the same features; plans differ only by *usage limits* (products, orders per month, staff seats, courier drivers, custom-domain add-on). The server decides. Read limits from `/me` and `/plan`; render disabled/upgrade states from the server's response and error codes (`staff_limit_reached`, `custom_domain_not_in_plan`, `driver_not_in_plan`, `product_limit_reached`). **Never** write `if (plan === 'starter')` in UI code. One `usePlanLimits()` hook only.
 2. **No fabricated urgency or fake trust signals** anywhere. No fake countdowns or "X left". Reviews can only be approved/rejected/unpublished/deleted — there is no way to write one.
-3. **Products and orders are unlimited on every plan.** Never display or invent a cap.
+3. **Products are a hard cap per plan; orders per month are a soft limit** (since 2026-11-14). Show the caps the server sends (`max: null` = unlimited), never invent one. The order limit only ever warns: **never block or warn inside order entry or POS** because of it.
 4. **COD is the default**; manual bKash/Nagad payment verification is first-class.
 5. **No payment details in the app.** Plan upgrades/renewals = open the prefilled WhatsApp link the server returns; the operator confirms payment outside the app.
 6. **Secrets are write-only.** Gateway/courier/AI/CAPI keys are never returned by the API — only `*_set` / `configured` booleans. Show "configured ✓" with Replace and Clear; never echo or prefill a secret. A blank secret field means "unchanged".
@@ -40,7 +40,7 @@ Suggested libraries (confirm each in the plan; flag anything needing custom nati
 - **Images:** multipart field `image` (`logo` for the logo), jpeg/png/webp ≤ 5 MB (logo ≤ 2 MB). **Resize on the device first** (long edge ≤ 1600 px, ~q82, strip EXIF/GPS, honour orientation), show progress, make retries safe.
 - **Stock:** use `POST …/stock` with `mode: delta` for quick ± (atomic, safe with two phones). For stock-takes use `mode: set` with `expected` and handle `409 stock_changed` by showing the real count and asking to retry. A price-only variant save must send `stock_quantity_was` so it never overwrites sales.
 - **Roles:** `user.is_owner` from `/me`. Staff get `403` on owner-only areas (settings, marketing, storefront appearance, delivery-zone edits, domains, staff, plan). Hide those screens for staff; still handle a `403` gracefully.
-- **Store status:** `store.is_pending` → show the "not live yet" banner with a button opening `platform.support_whatsapp_url`. Merchants can set everything up while pending.
+- **Store status:** `store.is_pending` → show the "not live yet" banner with a button opening `platform.support_whatsapp_url`. Merchants can set everything up while pending. Starter signups start on a 7-day trial (`store.is_trial`, shop live); Growth/Business start pending. `store.storefront_closed` (pending or trial ended) closes the shop to buyers only; the app keeps working. One app-wide banner (`StoreBanner`) covers pending / trial / trial ended / order limit near or over.
 - **No barcode field:** a barcode/QR scan is just an exact **SKU** lookup (`GET /variants/lookup?sku=`, or `GET /pos/products?q=`).
 - **Invoices:** `GET /orders/{id}/invoice` returns data; **render the PDF on the phone** and share/print it.
 
@@ -92,4 +92,4 @@ Suggested libraries (confirm each in the plan; flag anything needing custom nati
 4. After each milestone, tick it in this file so progress survives across sessions. Keep `docs/progress.md` current: update its verification checklist whenever the user confirms (or fails) something on the phone.
 
 ## Explicitly out of scope
-Multi-currency, multi-store per login, an in-app payment flow, a buyer-facing shopping app (the web storefront is already an installable PWA), anything with fake countdowns or fake stock numbers.
+Multi-currency, multi-store per login, an in-app payment flow, a buyer-facing shopping app (the web storefront is already an installable PWA), anything with fake countdowns or fake stock numbers (the trial's real "N days left" is fine).

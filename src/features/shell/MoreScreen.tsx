@@ -25,7 +25,7 @@ import { stopPush } from '../push/push';
 import { SellScreen } from '../sell/SellTab';
 import { SettingsHub } from '../settings/SettingsHub';
 import { StorefrontHub } from '../storefront/StorefrontHub';
-import { PendingBanner } from './PendingBanner';
+import { StoreBanner } from './StoreBanner';
 
 type View_ =
   | 'menu'
@@ -34,6 +34,7 @@ type View_ =
   | 'settings'
   | 'payments'
   | 'general'
+  | 'plan'
   | { sell: SellScreenName };
 
 function useMoreStyles() {
@@ -129,7 +130,10 @@ export function MoreScreen() {
     );
   }
   if (
-    (view === 'settings' || view === 'payments' || view === 'general') &&
+    (view === 'settings' ||
+      view === 'payments' ||
+      view === 'general' ||
+      view === 'plan') &&
     isOwner
   ) {
     return (
@@ -149,7 +153,7 @@ export function MoreScreen() {
 
   return (
     <View style={s.screen}>
-      <PendingBanner />
+      <StoreBanner />
       <ScrollView
         contentContainerStyle={s.body}
         showsVerticalScrollIndicator={false}

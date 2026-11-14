@@ -638,15 +638,24 @@ export const settingsSamples: Record<string, unknown> = {
             "price_yearly": 8400,
             "price_monthly_quote": 700,
             "staff_accounts": 3,
+            "products": 1000,
+            "orders_per_month": 2000,
+            "has_trial": false,
+            "trial_days": 0,
             "custom_domain_included": true,
             "courier_drivers": [
                 "steadfast",
                 "pathao",
                 "redx"
             ],
-            "status": "trial",
+            "status": "active",
             "is_pending": false,
-            "trial_ends_at": "2026-11-19T09:56:10+00:00"
+            "trial_ends_at": null,
+            "state": "active",
+            "is_trial": false,
+            "trial_expired": false,
+            "storefront_closed": false,
+            "trial_days_left": null
         },
         "renewal": {
             "expires_at": "2026-12-15T09:56:10+00:00",
@@ -658,6 +667,15 @@ export const settingsSamples: Record<string, unknown> = {
                 "used": 2,
                 "max": 3
             },
+            "products": {
+                "used": 312,
+                "max": 1000
+            },
+            "orders": {
+                "used": 1712,
+                "max": 2000,
+                "state": "near"
+            },
             "courier_drivers": {
                 "enabled": [
                     "steadfast",
@@ -667,9 +685,7 @@ export const settingsSamples: Record<string, unknown> = {
                 "configured": [
                     "steadfast"
                 ]
-            },
-            "products": "unlimited",
-            "orders": "unlimited"
+            }
         },
         "custom_domain": {
             "enabled": true,
@@ -685,6 +701,10 @@ export const settingsSamples: Record<string, unknown> = {
                 "price_yearly": 4200,
                 "price_monthly_quote": 350,
                 "staff_accounts": 1,
+                "products": 100,
+                "orders_per_month": 500,
+                "has_trial": true,
+                "trial_days": 7,
                 "custom_domain_included": false,
                 "courier_drivers": [
                     "steadfast"
@@ -700,6 +720,10 @@ export const settingsSamples: Record<string, unknown> = {
                 "price_yearly": 8400,
                 "price_monthly_quote": 700,
                 "staff_accounts": 3,
+                "products": 1000,
+                "orders_per_month": 2000,
+                "has_trial": false,
+                "trial_days": 0,
                 "custom_domain_included": true,
                 "courier_drivers": [
                     "steadfast",
@@ -717,6 +741,10 @@ export const settingsSamples: Record<string, unknown> = {
                 "price_yearly": 16800,
                 "price_monthly_quote": 1400,
                 "staff_accounts": null,
+                "products": 2000,
+                "orders_per_month": 5000,
+                "has_trial": false,
+                "trial_days": 0,
                 "custom_domain_included": true,
                 "courier_drivers": [
                     "steadfast",
@@ -728,7 +756,25 @@ export const settingsSamples: Record<string, unknown> = {
                 "contact_whatsapp_url": "https://wa.me/8801700000000?text=Assalamu%20alaikum%2C%20I%20want%20to%20move%20Mosciski-Rosenbaum%20to%20the%20Business%20plan."
             }
         ],
-        "renew_whatsapp_url": "https://wa.me/8801700000000?text=Assalamu%20alaikum%2C%20I%20want%20to%20renew%20the%20plan%20for%20Mosciski-Rosenbaum."
+        "renew_whatsapp_url": "https://wa.me/8801700000000?text=Assalamu%20alaikum%2C%20I%20want%20to%20renew%20the%20plan%20for%20Mosciski-Rosenbaum.",
+        "history": [
+            {
+                "date": "2025-12-15T09:56:10+00:00",
+                "label": "Renewed on Growth",
+                "period_from": "2025-12-15T09:56:10+00:00",
+                "period_to": "2026-12-15T09:56:10+00:00",
+                "amount": 8400,
+                "payment_reference": "BK8F2K1Q"
+            },
+            {
+                "date": "2024-12-15T09:56:10+00:00",
+                "label": "Started on Growth",
+                "period_from": null,
+                "period_to": "2025-12-15T09:56:10+00:00",
+                "amount": null,
+                "payment_reference": null
+            }
+        ]
     }
 },
   "Plan (Starter)": {
@@ -740,13 +786,22 @@ export const settingsSamples: Record<string, unknown> = {
             "price_yearly": 4200,
             "price_monthly_quote": 350,
             "staff_accounts": 1,
+            "products": 100,
+            "orders_per_month": 500,
+            "has_trial": true,
+            "trial_days": 7,
             "custom_domain_included": false,
             "courier_drivers": [
                 "steadfast"
             ],
             "status": "trial",
             "is_pending": false,
-            "trial_ends_at": "2026-11-19T09:56:10+00:00"
+            "trial_ends_at": "2026-11-19T09:56:10+00:00",
+            "state": "trial",
+            "is_trial": true,
+            "trial_expired": false,
+            "storefront_closed": false,
+            "trial_days_left": 4
         },
         "renewal": {
             "expires_at": null,
@@ -758,14 +813,21 @@ export const settingsSamples: Record<string, unknown> = {
                 "used": 1,
                 "max": 1
             },
+            "products": {
+                "used": 42,
+                "max": 100
+            },
+            "orders": {
+                "used": 380,
+                "max": 500,
+                "state": "ok"
+            },
             "courier_drivers": {
                 "enabled": [
                     "steadfast"
                 ],
                 "configured": []
-            },
-            "products": "unlimited",
-            "orders": "unlimited"
+            }
         },
         "custom_domain": {
             "enabled": false,
@@ -781,6 +843,10 @@ export const settingsSamples: Record<string, unknown> = {
                 "price_yearly": 4200,
                 "price_monthly_quote": 350,
                 "staff_accounts": 1,
+                "products": 100,
+                "orders_per_month": 500,
+                "has_trial": true,
+                "trial_days": 7,
                 "custom_domain_included": false,
                 "courier_drivers": [
                     "steadfast"
@@ -796,6 +862,10 @@ export const settingsSamples: Record<string, unknown> = {
                 "price_yearly": 8400,
                 "price_monthly_quote": 700,
                 "staff_accounts": 3,
+                "products": 1000,
+                "orders_per_month": 2000,
+                "has_trial": false,
+                "trial_days": 0,
                 "custom_domain_included": true,
                 "courier_drivers": [
                     "steadfast",
@@ -813,6 +883,10 @@ export const settingsSamples: Record<string, unknown> = {
                 "price_yearly": 16800,
                 "price_monthly_quote": 1400,
                 "staff_accounts": null,
+                "products": 2000,
+                "orders_per_month": 5000,
+                "has_trial": false,
+                "trial_days": 0,
                 "custom_domain_included": true,
                 "courier_drivers": [
                     "steadfast",
@@ -824,7 +898,17 @@ export const settingsSamples: Record<string, unknown> = {
                 "contact_whatsapp_url": "https://wa.me/8801700000000?text=Assalamu%20alaikum%2C%20I%20want%20to%20move%20Zulauf%20Group%20to%20the%20Business%20plan."
             }
         ],
-        "renew_whatsapp_url": "https://wa.me/8801700000000?text=Assalamu%20alaikum%2C%20I%20want%20to%20renew%20the%20plan%20for%20Zulauf%20Group."
+        "renew_whatsapp_url": "https://wa.me/8801700000000?text=Assalamu%20alaikum%2C%20I%20want%20to%20renew%20the%20plan%20for%20Zulauf%20Group.",
+        "history": [
+            {
+                "date": "2026-11-12T09:56:10+00:00",
+                "label": "Free trial",
+                "period_from": "2026-11-12T09:56:10+00:00",
+                "period_to": "2026-11-19T09:56:10+00:00",
+                "amount": 0,
+                "payment_reference": null
+            }
+        ]
     }
 },
   "Owner-only: staff token gets 403": {
